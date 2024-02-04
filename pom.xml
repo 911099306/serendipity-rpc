@@ -9,6 +9,8 @@
     <packaging>pom</packaging>
     <modules>
         <module>rpc-annotation</module>
+        <module>rpc-common</module>
+        <module>rpc-test</module>
     </modules>
     <modelVersion>4.0.0</modelVersion>
 
