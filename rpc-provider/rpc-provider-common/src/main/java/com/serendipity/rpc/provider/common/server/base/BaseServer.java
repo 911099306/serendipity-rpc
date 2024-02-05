@@ -1,5 +1,7 @@
 package com.serendipity.rpc.provider.common.server.base;
 
+import com.serendipity.rpc.codec.RpcDecoder;
+import com.serendipity.rpc.codec.RpcEncoder;
 import com.serendipity.rpc.provider.common.handler.RpcProviderHandler;
 import com.serendipity.rpc.provider.common.server.api.Server;
 import io.netty.bootstrap.ServerBootstrap;
@@ -63,8 +65,8 @@ public class BaseServer implements Server {
                                 @Override
                                 protected void initChannel(SocketChannel channel) throws Exception {
                                            channel.pipeline()
-                                                   .addLast(new StringDecoder())
-                                                   .addLast(new StringEncoder())
+                                                   .addLast(new RpcDecoder())
+                                                   .addLast(new RpcEncoder())
                                                    .addLast(new RpcProviderHandler(handlerMap));
                                 }
                     }).option(ChannelOption.SO_BACKLOG, 128)
