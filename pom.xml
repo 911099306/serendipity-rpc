@@ -5,12 +5,13 @@
 
     <groupId>com.serendipity</groupId>
     <artifactId>serendipity-rpc</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
         <module>rpc-annotation</module>
         <module>rpc-common</module>
         <module>rpc-test</module>
+        <module>rpc-provider</module>
     </modules>
     <modelVersion>4.0.0</modelVersion>
 
@@ -36,6 +37,7 @@
         <fst.version>2.57</fst.version>
         <spring.boot.version>2.2.6.RELEASE</spring.boot.version>
     </properties>
+
     <dependencies>
         <!-- SLF4J -->
         <dependency>
@@ -43,19 +45,6 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>${common.logging}</version>
-        </dependency>
-
-
-        <!-- <dependency>
-             <groupId>ch.qos.logback</groupId>
-             <artifactId>logback-classic</artifactId>
-             <version>${logback.version}</version>
-         </dependency>-->
 
         <!-- Spring -->
         <dependency>

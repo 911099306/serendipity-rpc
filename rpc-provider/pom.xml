@@ -7,6 +7,20 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>rpc-annotation</artifactId>
+    <artifactId>rpc-provider</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>rpc-provider-common</module>
+        <module>rpc-provider-native</module>
+    </modules>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 
 </project>
