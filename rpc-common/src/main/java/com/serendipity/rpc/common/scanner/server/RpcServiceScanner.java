@@ -1,6 +1,7 @@
 package com.serendipity.rpc.common.scanner.server;
 
 import com.serendipity.rpc.annotation.RpcService;
+import com.serendipity.rpc.common.helper.RpcServiceHelper;
 import com.serendipity.rpc.common.scanner.ClassScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,10 +50,8 @@ public class RpcServiceScanner extends ClassScanner {
                     //优先使用interfaceClass， interfaceClass 的name为空，再使用interfaceClassName
                     // TODO 后续逻辑向注册中心注册服务元数据，同时向 handlerMap中记录标注了RpcService注解的类实例
                     // LOGGER.info("当前标注了@RpcService注解的类实例名称===>>> " + clazz.getName());
-
-                    // handlerMap 中的key先简单存储为 serviceName + version + group, 后续根据实际情况处理 key
                     String serviceName = getServiceName(rpcService);
-                    String key = serviceName.concat(rpcService.version()).concat(rpcService.group());
+                    String key = RpcServiceHelper.buildServiceKey(serviceName, rpcService.version(), rpcService.group());
                     handlerMap.put(key, clazz.newInstance());
                 }
 
