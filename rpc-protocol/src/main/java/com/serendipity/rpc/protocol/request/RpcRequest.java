@@ -2,6 +2,8 @@ package com.serendipity.rpc.protocol.request;
 
 import com.serendipity.rpc.protocol.base.RpcMessage;
 
+import java.io.Serializable;
+
 /**
  * Rpc请求封装类，对应的请求id在消息头中
  *
@@ -9,7 +11,7 @@ import com.serendipity.rpc.protocol.base.RpcMessage;
  * @version 1.0
  * @date 2024/2/5
  **/
-public class RpcRequest extends RpcMessage {
+public class RpcRequest extends RpcMessage implements Serializable {
 
     private static final long serialVersionUID = 5555776886650396129L;
 

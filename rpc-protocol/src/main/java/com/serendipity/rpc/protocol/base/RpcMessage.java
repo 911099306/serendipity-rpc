@@ -10,7 +10,7 @@ package com.serendipity.rpc.protocol.base;
 public class RpcMessage {
 
     /**
-     * 是否单项发送
+     * 是否单向发送
      */
     private boolean oneway;
 
@@ -19,7 +19,7 @@ public class RpcMessage {
      */
     private boolean async;
 
-    public boolean isOneway() {
+    public boolean getOneway() {
         return oneway;
     }
 
@@ -27,7 +27,7 @@ public class RpcMessage {
         this.oneway = oneway;
     }
 
-    public boolean isAsync() {
+    public boolean getAsync() {
         return async;
     }
 

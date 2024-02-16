@@ -21,9 +21,6 @@ public class RpcServiceScanner extends ClassScanner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RpcServiceScanner.class);
 
-    static {
-        System.out.println("Log4j initialization status: " + org.apache.log4j.LogManager.getRootLogger().getAllAppenders().hasMoreElements());
-    }
 
     /**
      * 扫描指定包下的类，并筛选使用 @RpcService 注解标注的类

@@ -23,6 +23,7 @@ public class JdkSerialization implements Serialization {
             ObjectOutputStream out = new ObjectOutputStream(os);
             out.writeObject(obj);
             return os.toByteArray();
+
         } catch (IOException e) {
             throw new SerializerException(e.getMessage(), e);
         }

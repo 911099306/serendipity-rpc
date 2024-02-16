@@ -12,6 +12,7 @@
     <modules>
         <module>rpc-test-scanner</module>
         <module>rpc-test-provider</module>
+        <module>rpc-test-consumer</module>
     </modules>
     <dependencies>
         <dependency>
