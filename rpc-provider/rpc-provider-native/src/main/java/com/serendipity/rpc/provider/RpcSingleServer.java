@@ -13,12 +13,13 @@ import org.slf4j.LoggerFactory;
 public class RpcSingleServer extends BaseServer {
 
     private final Logger logger = LoggerFactory.getLogger(RpcSingleServer.class);
-    public RpcSingleServer(String serverAddress,String scanPackage) {
-        super(serverAddress);
+
+    public RpcSingleServer(String serverAddress, String scanPackage, String reflectType) {
+        super(serverAddress, reflectType);
         try {
             this.handlerMap = RpcServiceScanner.doScannerWithRpcServiceAnnotationFilterAndRegistryService(scanPackage);
         } catch (Exception e) {
-            logger.error("RPC Server init error! ",e);
+            logger.error("RPC Server init error! ", e);
         }
     }
 

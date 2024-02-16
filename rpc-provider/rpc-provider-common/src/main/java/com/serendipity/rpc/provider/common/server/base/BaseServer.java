@@ -41,17 +41,22 @@ public class BaseServer implements Server {
     protected int port = 27110;
 
     /**
-     * 实体类关系
+     * 实体类映射关系
      */
     protected Map<String, Object> handlerMap = new HashMap<>();
 
-    public BaseServer(String serverAddress) {
+    /**
+     * 代理类型
+     */
+    private String reflectType;
+
+    public BaseServer(String serverAddress, String reflectType) {
         if (!StringUtils.isEmpty(serverAddress)) {
             String[] serverArray = serverAddress.split(":");
             this.host = serverArray[0];
             this.port = Integer.parseInt(serverArray[1]);
         }
-
+        this.reflectType = reflectType;
     }
 
     @Override
@@ -62,13 +67,13 @@ public class BaseServer implements Server {
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
-                                @Override
-                                protected void initChannel(SocketChannel channel) throws Exception {
-                                           channel.pipeline()
-                                                   .addLast(new RpcDecoder())
-                                                   .addLast(new RpcEncoder())
-                                                   .addLast(new RpcProviderHandler(handlerMap));
-                                }
+                        @Override
+                        protected void initChannel(SocketChannel channel) throws Exception {
+                            channel.pipeline()
+                                    .addLast(new RpcDecoder())
+                                    .addLast(new RpcEncoder())
+                                    .addLast(new RpcProviderHandler(reflectType, handlerMap));
+                        }
                     }).option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             ChannelFuture future = bootstrap.bind(host, port).sync();
