@@ -16,6 +16,7 @@
         <module>rpc-protocol</module>
         <module>rpc-serialization</module>
         <module>rpc-codec</module>
+        <module>rpc-consumer</module>
     </modules>
     <modelVersion>4.0.0</modelVersion>
 
