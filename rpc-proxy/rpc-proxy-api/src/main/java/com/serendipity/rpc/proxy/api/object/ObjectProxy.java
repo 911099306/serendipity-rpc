@@ -4,6 +4,7 @@ import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.header.RpcHeader;
 import com.serendipity.rpc.protocol.header.RpcHeaderFactory;
 import com.serendipity.rpc.protocol.request.RpcRequest;
+import com.serendipity.rpc.proxy.api.async.IAsyncObjectProxy;
 import com.serendipity.rpc.proxy.api.consumer.Consumer;
 import com.serendipity.rpc.proxy.api.future.RPCFuture;
 import org.slf4j.Logger;
@@ -20,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  * @version 1.0
  * @date 2024/2/17
  **/
-public class ObjectProxy<T> implements InvocationHandler {
+public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
 
     private static Logger logger = LoggerFactory.getLogger(ObjectProxy.class);
 
@@ -115,13 +116,13 @@ public class ObjectProxy<T> implements InvocationHandler {
         logger.debug(method.getDeclaringClass().getName());
         logger.debug(method.getName());
 
-        if (method.getParameterTypes() != null && method.getParameterTypes().length > 0){
+        if (method.getParameterTypes() != null && method.getParameterTypes().length > 0) {
             for (int i = 0; i < method.getParameterTypes().length; ++i) {
                 logger.debug(method.getParameterTypes()[i].getName());
             }
         }
 
-        if (args != null && args.length > 0){
+        if (args != null && args.length > 0) {
             for (int i = 0; i < args.length; ++i) {
                 logger.debug(args[i].toString());
             }
@@ -129,5 +130,89 @@ public class ObjectProxy<T> implements InvocationHandler {
 
         RPCFuture rpcFuture = this.consumer.sendRequest(requestRpcProtocol);
         return rpcFuture == null ? null : timeout > 0 ? rpcFuture.get(timeout, TimeUnit.MILLISECONDS) : rpcFuture.get();
+    }
+
+    /**
+     * 异步调用方法
+     * @param funcName 方法名称
+     * @param args 方法参数
+     * @return
+     */
+    @Override
+    public RPCFuture call(String funcName, Object... args) {
+        RpcProtocol<RpcRequest> request = createRequest(this.clazz.getName(), funcName, args);
+        RPCFuture rpcFuture = null;
+        try {
+            rpcFuture = this.consumer.sendRequest(request);
+        } catch (Exception e) {
+            logger.error("async all throws exception:{}", e);
+        }
+        return rpcFuture;
+    }
+
+    /**
+     * 创建请求协议对象
+     * @param className 类名
+     * @param methodName 方法名
+     * @param args 参数
+     * @return
+     */
+    private RpcProtocol<RpcRequest> createRequest(String className, String methodName, Object[] args) {
+        RpcProtocol<RpcRequest> requestRpcProtocol = new RpcProtocol<>();
+
+        requestRpcProtocol.setHeader(RpcHeaderFactory.getRequestHeader(serializationType));
+
+        RpcRequest request = new RpcRequest();
+        request.setClassName(className);
+        request.setMethodName(methodName);
+        request.setParameters(args);
+        request.setVersion(this.serviceVersion);
+        request.setGroup(this.serviceGroup);
+
+        Class[] parameterTypes = new Class[args.length];
+        // 获得正确的 类 的类型 -> 基本属性的类型特殊
+        for (int i = 0; i < args.length; i++) {
+            parameterTypes[i] = getClassType(args[i]);
+        }
+        request.setParameterTypes(parameterTypes);
+        requestRpcProtocol.setBody(request);
+
+        logger.debug(className);
+        logger.debug(methodName);
+        for (int i = 0; i < parameterTypes.length; ++i) {
+            logger.debug(parameterTypes[i].getName());
+        }
+        for (int i = 0; i < args.length; ++i) {
+            logger.debug(args[i].toString());
+        }
+
+        return requestRpcProtocol;
+    }
+
+    /**
+     * 获取类型
+     */
+    private Class<?> getClassType(Object obj) {
+        Class<?> classType = obj.getClass();
+        String typeName = classType.getName();
+        switch (typeName) {
+            case "java.lang.Integer":
+                return Integer.TYPE;
+            case "java.lang.Long":
+                return Long.TYPE;
+            case "java.lang.Float":
+                return Float.TYPE;
+            case "java.lang.Double":
+                return Double.TYPE;
+            case "java.lang.Character":
+                return Character.TYPE;
+            case "java.lang.Boolean":
+                return Boolean.TYPE;
+            case "java.lang.Short":
+                return Short.TYPE;
+            case "java.lang.Byte":
+                return Byte.TYPE;
+        }
+        return classType;
     }
 }

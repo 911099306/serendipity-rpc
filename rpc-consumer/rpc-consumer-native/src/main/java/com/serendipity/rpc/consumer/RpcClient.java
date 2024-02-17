@@ -1,6 +1,9 @@
 package com.serendipity.rpc.consumer;
 
 import com.serendipity.rpc.consumer.common.RpcConsumer;
+import com.serendipity.rpc.proxy.api.async.IAsyncObjectProxy;
+import com.serendipity.rpc.proxy.api.config.ProxyConfig;
+import com.serendipity.rpc.proxy.api.object.ObjectProxy;
 import com.serendipity.rpc.proxy.jdk.JdkProxyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +55,13 @@ public class RpcClient {
     }
 
     public <T> T create(Class<T> interfaceClass) {
-        JdkProxyFactory<T> jdkProxyFactory = new JdkProxyFactory<T>(serviceVersion, serviceGroup, serializationType, timeout, RpcConsumer.getInstance(), async, oneway);
-        return jdkProxyFactory.getProxy(interfaceClass);
+        JdkProxyFactory<T> proxyFactory = new JdkProxyFactory<T>();
+        proxyFactory.init(new ProxyConfig<>(interfaceClass, serviceVersion, serviceGroup, timeout, RpcConsumer.getInstance(), serializationType, async, oneway));
+        return proxyFactory.getProxy(interfaceClass);
+    }
+
+    public <T> IAsyncObjectProxy createAsync(Class<T> interfaceClass) {
+        return new ObjectProxy<T>(interfaceClass, serviceVersion, serviceGroup, serializationType, timeout, RpcConsumer.getInstance(), async, oneway);
     }
 
     public void shutdown() {
