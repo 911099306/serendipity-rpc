@@ -1,6 +1,7 @@
 package com.serendipity.rpc.consumer.common.handler;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.serendipity.rpc.consumer.common.context.RpcContext;
 import com.serendipity.rpc.consumer.common.future.RPCFuture;
 import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.header.RpcHeader;
@@ -36,7 +37,7 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
     // private Map<Long, RpcProtocol<RpcResponse>> pendingResponse = new ConcurrentHashMap<>();
     private Map<Long, RPCFuture> pendingRPC = new ConcurrentHashMap<>();
 
-    public Channel getChannel(){
+    public Channel getChannel() {
         return channel;
     }
 
@@ -76,12 +77,19 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
     /**
      * 服务消费者向服务提供者发送请求
      */
-    public RPCFuture sendRequest(RpcProtocol<RpcRequest> protocol){
+    public RPCFuture sendRequest(RpcProtocol<RpcRequest> protocol, boolean async, boolean oneway) {
         logger.info("服务消费者发送的数据===>>>{}", JSONObject.toJSONString(protocol));
-        RPCFuture rpcFuture = this.getRpcFuture(protocol);
-        channel.writeAndFlush(protocol);
-        return rpcFuture;
 
+        // 3. 同步、 异步、 单向
+        return oneway ? this.sendRequestOneway(protocol) : async ? this.sendRequestAsync(protocol) : this.sendRequestSync(protocol);
+
+
+        // 2. Future 代替 while
+        // RPCFuture rpcFuture = this.getRpcFuture(protocol);
+        // channel.writeAndFlush(protocol);
+        // return rpcFuture;
+
+        // 1. 原始模式 while 循环
         // channel.writeAndFlush(protocol);
         // RpcHeader header = protocol.getHeader();
         // long requestId = header.getRequestId();
@@ -92,6 +100,34 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
         //         return responseRpcProtocol.getBody().getResult();
         //     }
         // }
+    }
+
+    /**
+     * 同步调用
+     */
+    private RPCFuture sendRequestSync(RpcProtocol<RpcRequest> protocol) {
+        RPCFuture rpcFuture = this.getRpcFuture(protocol);
+        channel.writeAndFlush(protocol);
+        return rpcFuture;
+    }
+
+    /**
+     * 异步调用
+     */
+    private RPCFuture sendRequestAsync(RpcProtocol<RpcRequest> protocol) {
+        RPCFuture rpcFuture = this.getRpcFuture(protocol);
+        // 如果是异步调用，则将RPCFuture放入RpcContext
+        RpcContext.getContext().setRPCFUture(rpcFuture);
+        channel.writeAndFlush(protocol);
+        return null;
+    }
+
+    /**
+     * 单向调用
+     */
+    private RPCFuture sendRequestOneway(RpcProtocol<RpcRequest> protocol) {
+        channel.writeAndFlush(protocol);
+        return null;
     }
 
     private RPCFuture getRpcFuture(RpcProtocol<RpcRequest> protocol) {
