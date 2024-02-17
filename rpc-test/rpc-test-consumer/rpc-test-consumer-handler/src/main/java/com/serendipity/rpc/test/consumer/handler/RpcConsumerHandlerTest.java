@@ -1,6 +1,7 @@
 package com.serendipity.rpc.test.consumer.handler;
 
 import com.serendipity.rpc.consumer.common.RpcConsumer;
+import com.serendipity.rpc.consumer.common.callback.AsyncRPCCallback;
 import com.serendipity.rpc.consumer.common.context.RpcContext;
 import com.serendipity.rpc.consumer.common.future.RPCFuture;
 import com.serendipity.rpc.protocol.RpcProtocol;
@@ -20,7 +21,23 @@ public class RpcConsumerHandlerTest {
 
     private static final Logger logger = LoggerFactory.getLogger(RpcConsumerHandlerTest.class);
     public static void main(String[] args) throws Exception {
-        mainOneWay(args);
+        // mainOneWay(args);
+
+        RpcConsumer consumer = RpcConsumer.getInstance();
+        RPCFuture rpcFuture = consumer.sendRequest(getRpcRequestProtocolSync());
+        rpcFuture.addCallback(new AsyncRPCCallback() {
+            @Override
+            public void onSuccess(Object result) {
+                logger.info("这是回调获得的信息 ==> {}", result);
+            }
+            @Override
+            public void onException(Exception e) {
+                logger.info("抛出了异常 ==> {}", e.getMessage());
+            }
+        });
+        Thread.sleep(200);
+        consumer.close();
+
     }
 
     public static void mainOneWay(String[] args) throws Exception {

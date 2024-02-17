@@ -1,5 +1,6 @@
 package com.serendipity.rpc.consumer.common;
 
+import com.serendipity.rpc.common.threadpoll.ClientThreadPool;
 import com.serendipity.rpc.consumer.common.future.RPCFuture;
 import com.serendipity.rpc.consumer.common.handler.RpcConsumerHandler;
 import com.serendipity.rpc.consumer.common.initializer.RpcConsumerInitializer;
@@ -58,6 +59,7 @@ public class RpcConsumer {
 
     public void close() {
         eventLoopGroup.shutdownGracefully();
+        ClientThreadPool.shutdown();
     }
 
     /**

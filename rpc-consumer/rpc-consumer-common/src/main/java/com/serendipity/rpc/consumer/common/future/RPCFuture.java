@@ -1,5 +1,7 @@
 package com.serendipity.rpc.consumer.common.future;
 
+import com.serendipity.rpc.common.threadpoll.ClientThreadPool;
+import com.serendipity.rpc.consumer.common.callback.AsyncRPCCallback;
 import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.request.RpcRequest;
 import com.serendipity.rpc.protocol.response.RpcResponse;
@@ -7,11 +9,14 @@ import com.sun.corba.se.impl.orbutil.concurrent.Sync;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * RPC 框架获取异步结果的 自定义Future
@@ -47,6 +52,16 @@ public class RPCFuture extends CompletableFuture<Object> {
      * 默认的超时时间
      */
     private long responseTimeThreshold = 5000;
+
+    /**
+     * 存放回调接口
+     */
+    private List<AsyncRPCCallback> pendingCallbacks = new ArrayList<AsyncRPCCallback>();
+
+    /**
+     * 添加、执行回调方法时 进行上锁
+     */
+    private ReentrantLock lock = new ReentrantLock();
 
     public RPCFuture(RpcProtocol<RpcRequest> requestRpcProtocol) {
         this.sync = new Sync();
@@ -110,6 +125,7 @@ public class RPCFuture extends CompletableFuture<Object> {
     public void done(RpcProtocol<RpcResponse> responseRpcProtocol) {
         this.responseRpcProtocol = responseRpcProtocol;
         sync.release(1);
+        invokeCallbacks();
         // Threshold
         long responseTime = System.currentTimeMillis() - startTime;
         if (responseTime > this.responseTimeThreshold) {
@@ -117,11 +133,53 @@ public class RPCFuture extends CompletableFuture<Object> {
         }
     }
 
+    private void invokeCallbacks() {
+        lock.lock();
+        try {
+            for (final AsyncRPCCallback callback : pendingCallbacks) {
+                runCallback(callback);
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * 添加回调方法
+     */
+    public RPCFuture addCallback(AsyncRPCCallback callback) {
+        lock.lock();
+        try {
+            if (isDone()) {
+                runCallback(callback);
+            }else {
+                this.pendingCallbacks.add(callback);
+            }
+        } finally {
+            lock.unlock();
+        }
+        return this;
+    }
+
+    /**
+     * 执行回调方法
+     */
+    private void runCallback(final AsyncRPCCallback callback) {
+        final RpcResponse res = this.responseRpcProtocol.getBody();
+        ClientThreadPool.submit(() -> {
+            if (!res.isError()) {
+                callback.onSuccess(res.getResult());
+            } else {
+                callback.onException(new RuntimeException("Response error", new Throwable(res.getError())));
+            }
+        });
+    }
+
     static class Sync extends AbstractQueuedSynchronizer {
 
         private static final long serialVersionUID = 1L;
 
-        //future status
+        // future status
         private final int done = 1;
         private final int pending = 0;
 
