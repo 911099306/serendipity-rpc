@@ -1,6 +1,7 @@
 package com.serendipity.rpc.consumer.common.handler;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.serendipity.rpc.consumer.common.future.RPCFuture;
 import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.header.RpcHeader;
 import com.serendipity.rpc.protocol.request.RpcRequest;
@@ -32,7 +33,8 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
     /**
      * 存储请求ID与RpcResponse协议的映射关系
      */
-    private Map<Long, RpcProtocol<RpcResponse>> pendingResponse = new ConcurrentHashMap<>();
+    // private Map<Long, RpcProtocol<RpcResponse>> pendingResponse = new ConcurrentHashMap<>();
+    private Map<Long, RPCFuture> pendingRPC = new ConcurrentHashMap<>();
 
     public Channel getChannel(){
         return channel;
@@ -63,25 +65,41 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
         logger.info("服务消费者接收到的数据===>>>{}", JSONObject.toJSONString(protocol));
         RpcHeader header = protocol.getHeader();
         long requestId = header.getRequestId();
-        pendingResponse.put(requestId, protocol);
+        // pendingResponse.put(requestId, protocol);
+        RPCFuture rpcFuture = pendingRPC.remove(requestId);
+        if (rpcFuture != null) {
+            // 接收到 提供者 相应的数据， 将其交予 Future
+            rpcFuture.done(protocol);
+        }
     }
 
     /**
      * 服务消费者向服务提供者发送请求
      */
-    public Object sendRequest(RpcProtocol<RpcRequest> protocol){
+    public RPCFuture sendRequest(RpcProtocol<RpcRequest> protocol){
         logger.info("服务消费者发送的数据===>>>{}", JSONObject.toJSONString(protocol));
+        RPCFuture rpcFuture = this.getRpcFuture(protocol);
         channel.writeAndFlush(protocol);
+        return rpcFuture;
+
+        // channel.writeAndFlush(protocol);
+        // RpcHeader header = protocol.getHeader();
+        // long requestId = header.getRequestId();
+        // 异步转同步
+        // while (true) {
+        //     RpcProtocol<RpcResponse> responseRpcProtocol = pendingResponse.remove(requestId);
+        //     if (responseRpcProtocol != null) {
+        //         return responseRpcProtocol.getBody().getResult();
+        //     }
+        // }
+    }
+
+    private RPCFuture getRpcFuture(RpcProtocol<RpcRequest> protocol) {
+        RPCFuture rpcFuture = new RPCFuture(protocol);
         RpcHeader header = protocol.getHeader();
         long requestId = header.getRequestId();
-
-        // 异步转同步
-        while (true) {
-            RpcProtocol<RpcResponse> responseRpcProtocol = pendingResponse.remove(requestId);
-            if (responseRpcProtocol != null) {
-                return responseRpcProtocol.getBody().getResult();
-            }
-        }
+        pendingRPC.put(requestId, rpcFuture);
+        return rpcFuture;
     }
 
     public void close() {

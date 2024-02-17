@@ -1,5 +1,6 @@
 package com.serendipity.rpc.consumer.common;
 
+import com.serendipity.rpc.consumer.common.future.RPCFuture;
 import com.serendipity.rpc.consumer.common.handler.RpcConsumerHandler;
 import com.serendipity.rpc.consumer.common.initializer.RpcConsumerInitializer;
 import com.serendipity.rpc.protocol.RpcProtocol;
@@ -63,7 +64,7 @@ public class RpcConsumer {
      * 正常应是从 注册中心 获取服务，暂时写死直接
      * @param protocol 发送的数据
      */
-    public Object sendRequest(RpcProtocol<RpcRequest> protocol) throws Exception {
+    public RPCFuture sendRequest(RpcProtocol<RpcRequest> protocol) throws Exception {
         String serviceAddress = "127.0.0.1";
         int port = 27880;
         String key = serviceAddress.concat("_").concat(String.valueOf(port));
