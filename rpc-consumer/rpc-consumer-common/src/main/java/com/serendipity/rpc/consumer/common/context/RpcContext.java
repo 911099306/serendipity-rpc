@@ -1,6 +1,7 @@
 package com.serendipity.rpc.consumer.common.context;
 
-import com.serendipity.rpc.consumer.common.future.RPCFuture;
+
+import com.serendipity.rpc.proxy.api.future.RPCFuture;
 
 /**
  * 保存 RPC 上下文

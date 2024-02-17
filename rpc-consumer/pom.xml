@@ -12,5 +12,6 @@
 
     <modules>
         <module>rpc-consumer-common</module>
+        <module>rpc-consumer-native</module>
     </modules>
 </project>

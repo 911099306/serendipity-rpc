@@ -1,4 +1,4 @@
-package com.serendipity.rpc.consumer.common.callback;
+package com.serendipity.rpc.proxy.api.callback;
 
 /**
  * 异步回调接口

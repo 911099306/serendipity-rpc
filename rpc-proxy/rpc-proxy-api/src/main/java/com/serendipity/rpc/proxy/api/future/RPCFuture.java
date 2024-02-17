@@ -1,11 +1,11 @@
-package com.serendipity.rpc.consumer.common.future;
+package com.serendipity.rpc.proxy.api.future;
+
 
 import com.serendipity.rpc.common.threadpoll.ClientThreadPool;
-import com.serendipity.rpc.consumer.common.callback.AsyncRPCCallback;
 import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.request.RpcRequest;
 import com.serendipity.rpc.protocol.response.RpcResponse;
-import com.sun.corba.se.impl.orbutil.concurrent.Sync;
+import com.serendipity.rpc.proxy.api.callback.AsyncRPCCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

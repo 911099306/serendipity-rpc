@@ -2,11 +2,11 @@ package com.serendipity.rpc.consumer.common.handler;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.serendipity.rpc.consumer.common.context.RpcContext;
-import com.serendipity.rpc.consumer.common.future.RPCFuture;
 import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.header.RpcHeader;
 import com.serendipity.rpc.protocol.request.RpcRequest;
 import com.serendipity.rpc.protocol.response.RpcResponse;
+import com.serendipity.rpc.proxy.api.future.RPCFuture;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;

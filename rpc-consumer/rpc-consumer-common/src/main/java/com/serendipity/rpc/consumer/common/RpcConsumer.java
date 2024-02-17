@@ -1,11 +1,12 @@
 package com.serendipity.rpc.consumer.common;
 
 import com.serendipity.rpc.common.threadpoll.ClientThreadPool;
-import com.serendipity.rpc.consumer.common.future.RPCFuture;
 import com.serendipity.rpc.consumer.common.handler.RpcConsumerHandler;
 import com.serendipity.rpc.consumer.common.initializer.RpcConsumerInitializer;
 import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.request.RpcRequest;
+import com.serendipity.rpc.proxy.api.consumer.Consumer;
+import com.serendipity.rpc.proxy.api.future.RPCFuture;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -16,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 1.0
  * @date 2024/2/16
  **/
-public class RpcConsumer {
+public class RpcConsumer implements Consumer {
 
     private final Logger logger = LoggerFactory.getLogger(RpcConsumer.class);
     private final Bootstrap bootstrap;
@@ -66,6 +66,7 @@ public class RpcConsumer {
      * 正常应是从 注册中心 获取服务，暂时写死直接
      * @param protocol 发送的数据
      */
+    @Override
     public RPCFuture sendRequest(RpcProtocol<RpcRequest> protocol) throws Exception {
         String serviceAddress = "127.0.0.1";
         int port = 27880;

@@ -1,16 +1,14 @@
 package com.serendipity.rpc.test.consumer.handler;
 
 import com.serendipity.rpc.consumer.common.RpcConsumer;
-import com.serendipity.rpc.consumer.common.callback.AsyncRPCCallback;
 import com.serendipity.rpc.consumer.common.context.RpcContext;
-import com.serendipity.rpc.consumer.common.future.RPCFuture;
 import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.header.RpcHeaderFactory;
 import com.serendipity.rpc.protocol.request.RpcRequest;
+import com.serendipity.rpc.proxy.api.callback.AsyncRPCCallback;
+import com.serendipity.rpc.proxy.api.future.RPCFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.Future;
 
 /**
  * @author serendipity
