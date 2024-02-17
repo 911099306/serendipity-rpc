@@ -4,6 +4,8 @@ import com.serendipity.rpc.consumer.common.RpcConsumer;
 import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.header.RpcHeaderFactory;
 import com.serendipity.rpc.protocol.request.RpcRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author serendipity
@@ -11,10 +13,12 @@ import com.serendipity.rpc.protocol.request.RpcRequest;
  * @date 2024/2/17
  **/
 public class RpcConsumerHandlerTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(RpcConsumerHandlerTest.class);
     public static void main(String[] args) throws Exception {
         RpcConsumer consumer = RpcConsumer.getInstance();
-        consumer.sendRequest(getRpcRequestProtocol());
-        Thread.sleep(2000);
+        Object result = consumer.sendRequest(getRpcRequestProtocol());
+        logger.info("从服务消费者获取到的数据===>>>" + result.toString());
         consumer.close();
     }
 

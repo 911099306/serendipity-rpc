@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -62,7 +63,7 @@ public class RpcConsumer {
      * 正常应是从 注册中心 获取服务，暂时写死直接
      * @param protocol 发送的数据
      */
-    public void sendRequest(RpcProtocol<RpcRequest> protocol) throws Exception {
+    public Object sendRequest(RpcProtocol<RpcRequest> protocol) throws Exception {
         String serviceAddress = "127.0.0.1";
         int port = 27880;
         String key = serviceAddress.concat("_").concat(String.valueOf(port));
@@ -78,8 +79,7 @@ public class RpcConsumer {
             handler = getRpcConsumerHandler(serviceAddress, port);
             handlerMap.put(key, handler);
         }
-        handler.sendRequest(protocol);
-
+        return handler.sendRequest(protocol);
     }
 
     private RpcConsumerHandler getRpcConsumerHandler(String serviceAddress, int port) throws InterruptedException {
