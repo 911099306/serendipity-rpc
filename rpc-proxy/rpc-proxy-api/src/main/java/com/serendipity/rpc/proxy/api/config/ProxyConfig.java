@@ -1,6 +1,7 @@
 package com.serendipity.rpc.proxy.api.config;
 
 import com.serendipity.rpc.proxy.api.consumer.Consumer;
+import com.serendipity.rpc.registry.api.RegistryService;
 
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
@@ -36,6 +37,11 @@ public class ProxyConfig<T> implements Serializable {
     private long timeout;
 
     /**
+     * 服务注册接口
+     */
+    private RegistryService registryService;
+
+    /**
      * 消费者接口
      */
     private Consumer consumer;
@@ -58,16 +64,26 @@ public class ProxyConfig<T> implements Serializable {
     public ProxyConfig() {
     }
 
-    public ProxyConfig(Class<T> clazz, String serviceVersion, String serviceGroup, long timeout, Consumer consumer, String serializationType, boolean async, boolean oneway) {
+    public ProxyConfig(Class<T> clazz, String serviceVersion, String serviceGroup, long timeout,RegistryService registryService, Consumer consumer, String serializationType, boolean async, boolean oneway) {
         this.clazz = clazz;
         this.serviceVersion = serviceVersion;
         this.serviceGroup = serviceGroup;
         this.timeout = timeout;
+        this.registryService = registryService;
         this.consumer = consumer;
         this.serializationType = serializationType;
         this.async = async;
         this.oneway = oneway;
     }
+
+    public RegistryService getRegistryService() {
+        return registryService;
+    }
+
+    public void setRegistryService(RegistryService registryService) {
+        this.registryService = registryService;
+    }
+
 
     public Class<T> getClazz() {
         return clazz;

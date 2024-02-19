@@ -17,5 +17,11 @@
             <artifactId>rpc-protocol</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-registry-zookeeper</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
