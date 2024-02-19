@@ -1,6 +1,8 @@
 package com.serendipity.rpc.registry.zookeeper;
 
 import com.serendipity.rpc.common.helper.RpcServiceHelper;
+import com.serendipity.rpc.loadbalancer.api.ServiceLoadBalancer;
+import com.serendipity.rpc.loadbalancer.random.RandomServiceLoadBalancer;
 import com.serendipity.rpc.protocol.meta.ServiceMeta;
 import com.serendipity.rpc.registry.api.RegistryService;
 import com.serendipity.rpc.registry.api.config.RegistryConfig;
@@ -47,6 +49,11 @@ public class ZookeeperRegistryService implements RegistryService {
     private ServiceDiscovery<ServiceMeta> serviceDiscovery;
 
     /**
+     * 负载均衡接口
+     */
+    private ServiceLoadBalancer<ServiceInstance<ServiceMeta>> serviceLoadBalancer;
+
+    /**
      *  构建 CuratorFramework 客户端， 并初始化 ServiceDiscovery
      */
     @Override
@@ -60,6 +67,8 @@ public class ZookeeperRegistryService implements RegistryService {
                 .basePath(ZK_BASE_PATH)
                 .build();
         this.serviceDiscovery.start();
+        // TODO 默认创建基于随机算法的负载均衡策略，后续基于SPI扩展
+        this.serviceLoadBalancer = new RandomServiceLoadBalancer<ServiceInstance<ServiceMeta>>();
     }
 
     /**
@@ -106,7 +115,7 @@ public class ZookeeperRegistryService implements RegistryService {
     @Override
     public ServiceMeta discovery(String serviceName, int invokerHashCode) throws Exception {
         Collection<ServiceInstance<ServiceMeta>> serviceInstances = serviceDiscovery.queryForInstances(serviceName);
-        ServiceInstance<ServiceMeta> instance = this.selectOneServiceInstance((List<ServiceInstance<ServiceMeta>>) serviceInstances);
+        ServiceInstance<ServiceMeta> instance = serviceLoadBalancer.select((List<ServiceInstance<ServiceMeta>>) serviceInstances, invokerHashCode);
         if (instance != null) {
             return instance.getPayload();
         }

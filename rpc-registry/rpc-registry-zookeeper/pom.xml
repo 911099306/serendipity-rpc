@@ -40,5 +40,11 @@
             <artifactId>rpc-registry-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-loadbalancer-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
