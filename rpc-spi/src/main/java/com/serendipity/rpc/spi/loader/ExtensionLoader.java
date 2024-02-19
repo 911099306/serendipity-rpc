@@ -94,7 +94,7 @@ public final class ExtensionLoader<T> {
 
 
     /**
-     * 直接获取想要的类实例
+     * 直接获取想要的类实例，若name为空，则直接获取默认，否之根据名称获得
      * @param clazz 接口的Class实例
      * @param name SPI名称
      * @param <T> 泛型类型
