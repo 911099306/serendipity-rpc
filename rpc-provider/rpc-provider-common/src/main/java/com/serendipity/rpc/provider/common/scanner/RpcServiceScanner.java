@@ -1,11 +1,14 @@
-package com.serendipity.rpc.common.scanner.server;
+package com.serendipity.rpc.provider.common.scanner;
 
 import com.serendipity.rpc.annotation.RpcService;
 import com.serendipity.rpc.common.helper.RpcServiceHelper;
 import com.serendipity.rpc.common.scanner.ClassScanner;
+import com.serendipity.rpc.protocol.meta.ServiceMeta;
+import com.serendipity.rpc.registry.api.RegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.spi.ServiceRegistry;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +23,7 @@ import java.util.Map;
 public class RpcServiceScanner extends ClassScanner {
 
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RpcServiceScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(RpcServiceScanner.class);
 
 
     /**
@@ -31,10 +34,9 @@ public class RpcServiceScanner extends ClassScanner {
      * @return
      * @throws Exception
      */
-    public static Map<String, Object> doScannerWithRpcServiceAnnotationFilterAndRegistryService(String scanPackage) throws Exception {
+    public static Map<String, Object> doScannerWithRpcServiceAnnotationFilterAndRegistryService(String host, int port, String scanPackage, RegistryService registryService) throws Exception {
 
         Map<String, Object> handlerMap = new HashMap<>();
-
         List<String> classNameList = getClassNameList(scanPackage);
         if (classNameList == null || classNameList.isEmpty()) {
             return handlerMap;
@@ -47,16 +49,17 @@ public class RpcServiceScanner extends ClassScanner {
                 // 检测 该类是否被注解 RpcService 标注
                 RpcService rpcService = clazz.getAnnotation(RpcService.class);
                 if (rpcService != null) {
-                    //优先使用interfaceClass， interfaceClass 的name为空，再使用interfaceClassName
-                    // TODO 后续逻辑向注册中心注册服务元数据，同时向 handlerMap中记录标注了RpcService注解的类实例
-                    // LOGGER.info("当前标注了@RpcService注解的类实例名称===>>> " + clazz.getName());
-                    String serviceName = getServiceName(rpcService);
-                    String key = RpcServiceHelper.buildServiceKey(serviceName, rpcService.version(), rpcService.group());
+                    //构建当前类待注册到注册中心的的元数据信息
+                    ServiceMeta serviceMeta = new ServiceMeta(getServiceName(rpcService), rpcService.version(), rpcService.group(), host, port);
+                    // 将元数据注册到注册中心
+                    registryService.register(serviceMeta);
+                    // 构造 k-v 存入本地map
+                    String key = RpcServiceHelper.buildServiceKey(serviceMeta.getServiceName(), serviceMeta.getServiceVersion(), serviceMeta.getServiceGroup());
                     handlerMap.put(key, clazz.newInstance());
                 }
 
             } catch (Exception e) {
-                LOGGER.error("scan classes throws exception: {}", e);
+                logger.error("scan classes throws exception: {}", e);
             }
         });
         return handlerMap;
