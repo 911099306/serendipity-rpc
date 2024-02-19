@@ -1,0 +1,1 @@
+spiService=com.serendipity.rpc.test.spi.service.impl.SPIServiceImpl

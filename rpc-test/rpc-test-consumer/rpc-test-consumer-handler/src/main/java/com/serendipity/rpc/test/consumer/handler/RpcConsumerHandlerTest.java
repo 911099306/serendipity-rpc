@@ -18,47 +18,47 @@ import org.slf4j.LoggerFactory;
 public class RpcConsumerHandlerTest {
 
     private static final Logger logger = LoggerFactory.getLogger(RpcConsumerHandlerTest.class);
-    public static void main(String[] args) throws Exception {
-        // mainOneWay(args);
-
-        RpcConsumer consumer = RpcConsumer.getInstance();
-        RPCFuture rpcFuture = consumer.sendRequest(getRpcRequestProtocolSync());
-        rpcFuture.addCallback(new AsyncRPCCallback() {
-            @Override
-            public void onSuccess(Object result) {
-                logger.info("这是回调获得的信息 ==> {}", result);
-            }
-            @Override
-            public void onException(Exception e) {
-                logger.info("抛出了异常 ==> {}", e.getMessage());
-            }
-        });
-        Thread.sleep(200);
-        consumer.close();
-
-    }
-
-    public static void mainOneWay(String[] args) throws Exception {
-        RpcConsumer consumer = RpcConsumer.getInstance();
-        consumer.sendRequest(getRpcRequestProtocolOneWay());
-        logger.info("无需获取返回的结果数据");
-        consumer.close();
-    }
-
-    public static void mainAsync(String[] args) throws Exception {
-        RpcConsumer consumer = RpcConsumer.getInstance();
-        consumer.sendRequest(getRpcRequestProtocolAsync());
-        RPCFuture future = RpcContext.getContext().getRPCFuture();
-        logger.info("从服务消费者获取到的数据===>>>" + future.get());
-        consumer.close();
-    }
-
-    public static void mainSync(String[] args) throws Exception {
-        RpcConsumer consumer = RpcConsumer.getInstance();
-        RPCFuture future = consumer.sendRequest(getRpcRequestProtocolSync());
-        logger.info("从服务消费者获取到的数据===>>>" + future.get());
-        consumer.close();
-    }
+    // public static void main(String[] args) throws Exception {
+    //     // mainOneWay(args);
+    //
+    //     RpcConsumer consumer = RpcConsumer.getInstance();
+    //     RPCFuture rpcFuture = consumer.sendRequest(getRpcRequestProtocolSync());
+    //     rpcFuture.addCallback(new AsyncRPCCallback() {
+    //         @Override
+    //         public void onSuccess(Object result) {
+    //             logger.info("这是回调获得的信息 ==> {}", result);
+    //         }
+    //         @Override
+    //         public void onException(Exception e) {
+    //             logger.info("抛出了异常 ==> {}", e.getMessage());
+    //         }
+    //     });
+    //     Thread.sleep(200);
+    //     consumer.close();
+    //
+    // }
+    //
+    // public static void mainOneWay(String[] args) throws Exception {
+    //     RpcConsumer consumer = RpcConsumer.getInstance();
+    //     consumer.sendRequest(getRpcRequestProtocolOneWay());
+    //     logger.info("无需获取返回的结果数据");
+    //     consumer.close();
+    // }
+    //
+    // public static void mainAsync(String[] args) throws Exception {
+    //     RpcConsumer consumer = RpcConsumer.getInstance();
+    //     consumer.sendRequest(getRpcRequestProtocolAsync());
+    //     RPCFuture future = RpcContext.getContext().getRPCFuture();
+    //     logger.info("从服务消费者获取到的数据===>>>" + future.get());
+    //     consumer.close();
+    // }
+    //
+    // public static void mainSync(String[] args) throws Exception {
+    //     RpcConsumer consumer = RpcConsumer.getInstance();
+    //     RPCFuture future = consumer.sendRequest(getRpcRequestProtocolSync());
+    //     logger.info("从服务消费者获取到的数据===>>>" + future.get());
+    //     consumer.close();
+    // }
 
     private static RpcProtocol<RpcRequest> getRpcRequestProtocolOneWay(){
         //模拟发送数据
