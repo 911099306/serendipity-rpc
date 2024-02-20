@@ -66,6 +66,26 @@
       <artifactId>rpc-loadbalancer-random-weight-enhanced</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.serendipity</groupId>
+      <artifactId>rpc-loadbalancer-consistenthash-zk-enhanced</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.serendipity</groupId>
+      <artifactId>rpc-loadbalancer-hash-weight-enhanced</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.serendipity</groupId>
+      <artifactId>rpc-loadbalancer-round-robin-weight-enhanced</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.serendipity</groupId>
+      <artifactId>rpc-loadbalancer-sourceip-hash-weight-enhanced</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
   </dependencies>
 </project>
