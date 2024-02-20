@@ -1,0 +1,1 @@
+kryo=com.serendipity.rpc.serialization.kryo.KryoSerialization

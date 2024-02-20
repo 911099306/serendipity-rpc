@@ -17,6 +17,13 @@
         </dependency>
         <dependency>
             <groupId>com.serendipity</groupId>
+            <artifactId>rpc-spi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- 序列化方式 -->
+        <dependency>
+            <groupId>com.serendipity</groupId>
             <artifactId>rpc-serialization-jdk</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -27,9 +34,25 @@
         </dependency>
         <dependency>
             <groupId>com.serendipity</groupId>
-            <artifactId>rpc-spi</artifactId>
+            <artifactId>rpc-serialization-hessian2</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-serialization-fst</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-serialization-protostuff</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-serialization-kryo</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 
 </project>
