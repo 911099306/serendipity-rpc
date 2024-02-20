@@ -21,8 +21,8 @@ public class ZookeeperRegistryTest {
     private ServiceMeta serviceMeta;
 
     @Before
-    public void init() throws Exception{
-        RegistryConfig registryConfig = new RegistryConfig("127.0.0.1:2181", "zookeeper");
+    public void init() throws Exception {
+        RegistryConfig registryConfig = new RegistryConfig("127.0.0.1:2181", "zookeeper", "random");
         this.registryService = new ZookeeperRegistryService();
         this.registryService.init(registryConfig);
         this.serviceMeta = new ServiceMeta(ZookeeperRegistryTest.class.getName(), "1.0.0", "serendipity", "127.0.0.1", 8080);

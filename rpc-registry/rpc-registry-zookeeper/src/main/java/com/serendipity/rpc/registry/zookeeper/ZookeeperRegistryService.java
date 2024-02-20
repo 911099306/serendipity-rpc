@@ -6,6 +6,7 @@ import com.serendipity.rpc.loadbalancer.random.RandomServiceLoadBalancer;
 import com.serendipity.rpc.protocol.meta.ServiceMeta;
 import com.serendipity.rpc.registry.api.RegistryService;
 import com.serendipity.rpc.registry.api.config.RegistryConfig;
+import com.serendipity.rpc.spi.loader.ExtensionLoader;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -54,7 +55,7 @@ public class ZookeeperRegistryService implements RegistryService {
     private ServiceLoadBalancer<ServiceInstance<ServiceMeta>> serviceLoadBalancer;
 
     /**
-     *  构建 CuratorFramework 客户端， 并初始化 ServiceDiscovery
+     * 构建 CuratorFramework 客户端， 并初始化 ServiceDiscovery
      */
     @Override
     public void init(RegistryConfig registryConfig) throws Exception {
@@ -67,12 +68,13 @@ public class ZookeeperRegistryService implements RegistryService {
                 .basePath(ZK_BASE_PATH)
                 .build();
         this.serviceDiscovery.start();
-        // TODO 默认创建基于随机算法的负载均衡策略，后续基于SPI扩展
-        this.serviceLoadBalancer = new RandomServiceLoadBalancer<ServiceInstance<ServiceMeta>>();
+        this.serviceLoadBalancer = ExtensionLoader.getExtension(ServiceLoadBalancer.class, registryConfig.getRegistryLoadBalanceType());
+        // this.serviceLoadBalancer = new RandomServiceLoadBalancer<ServiceInstance<ServiceMeta>>();
     }
 
     /**
      * 将 serviceMeta 元数据 注册到 Zookeeper
+     *
      * @param serviceMeta 服务元数据
      * @throws Exception 抛出的异常
      */
@@ -91,6 +93,7 @@ public class ZookeeperRegistryService implements RegistryService {
 
     /**
      * 移除 Zookeeper 中注册的对应的元数据
+     *
      * @param serviceMeta 服务元数据
      * @throws Exception 抛出的异常
      */
@@ -108,31 +111,19 @@ public class ZookeeperRegistryService implements RegistryService {
 
     /**
      * 根据传入的 serviceName 和 invokerHashCode 从 Zookeeper 中获取对应的ServiceMeta元数据
-     * @param serviceName 服务名称
+     *
+     * @param serviceName     服务名称
      * @param invokerHashCode HashCode 值 扩展负载均衡时使用
      * @throws Exception 抛出的异常
      */
     @Override
-    public ServiceMeta discovery(String serviceName, int invokerHashCode) throws Exception {
+    public ServiceMeta discovery(String serviceName, int invokerHashCode, String sourceIp) throws Exception {
         Collection<ServiceInstance<ServiceMeta>> serviceInstances = serviceDiscovery.queryForInstances(serviceName);
-        ServiceInstance<ServiceMeta> instance = serviceLoadBalancer.select((List<ServiceInstance<ServiceMeta>>) serviceInstances, invokerHashCode);
+        ServiceInstance<ServiceMeta> instance = serviceLoadBalancer.select((List<ServiceInstance<ServiceMeta>>) serviceInstances, invokerHashCode, sourceIp);
         if (instance != null) {
             return instance.getPayload();
         }
         return null;
-    }
-
-    /**
-     * 随机挑选一个服务
-     * @param serviceInstances 在 Zookeeper 中注册的所有服务
-     */
-    private ServiceInstance<ServiceMeta> selectOneServiceInstance(List<ServiceInstance<ServiceMeta>> serviceInstances){
-        if (serviceInstances == null || serviceInstances.isEmpty()){
-            return null;
-        }
-        Random random = new Random();
-        int index = random.nextInt(serviceInstances.size());
-        return serviceInstances.get(index);
     }
 
     @Override

@@ -58,29 +58,30 @@ public class BaseServer implements Server {
      */
     protected RegistryService registryService;
 
-    public BaseServer(String serverAddress, String registryAddress, String registryType, String reflectType) {
+    public BaseServer(String serverAddress, String registryAddress, String registryType, String registryLoadBalanceType, String reflectType) {
         if (!StringUtils.isEmpty(serverAddress)) {
             String[] serverArray = serverAddress.split(":");
             this.host = serverArray[0];
             this.port = Integer.parseInt(serverArray[1]);
         }
         this.reflectType = reflectType;
-        this.registryService = this.getRegistryService(registryAddress, registryType);
+        this.registryService = this.getRegistryService(registryAddress, registryType, registryLoadBalanceType);
     }
 
     /**
      * 创建服务注册与发现的实现类
+     *
      * @param registryAddress 注册中心地址
-     * @param registryType 注册中心类型
+     * @param registryType    注册中心类型
      */
-    private RegistryService getRegistryService(String registryAddress, String registryType) {
+    private RegistryService getRegistryService(String registryAddress, String registryType, String registryLoadBalanceType) {
         // TODO 后续扩展支持 SPI
         RegistryService registryService = null;
         try {
             registryService = new ZookeeperRegistryService();
-            registryService.init(new RegistryConfig(registryAddress, registryType));
+            registryService.init(new RegistryConfig(registryAddress, registryType, registryLoadBalanceType));
         } catch (Exception e) {
-            logger.error("BaseServer: RPC Server init error", e);
+            logger.error("RPC Server init error", e);
         }
         return registryService;
     }
@@ -100,7 +101,8 @@ public class BaseServer implements Server {
                                     .addLast(new RpcEncoder())
                                     .addLast(new RpcProviderHandler(reflectType, handlerMap));
                         }
-                    }).option(ChannelOption.SO_BACKLOG, 128)
+                    })
+                    .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             ChannelFuture future = bootstrap.bind(host, port).sync();
             logger.info("Server started on {}:{}", host, port);

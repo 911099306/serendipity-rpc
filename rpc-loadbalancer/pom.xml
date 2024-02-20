@@ -9,6 +9,14 @@
     <modules>
         <module>rpc-loadbalancer-api</module>
         <module>rpc-loadbalancer-random</module>
+        <module>rpc-loadbalancer-random-weight</module>
+        <module>rpc-loadbalancer-hash</module>
+        <module>rpc-loadbalancer-hash-weight</module>
+        <module>rpc-loadbalancer-round-robin</module>
+        <module>rpc-loadbalancer-round-robin-weight</module>
+        <module>rpc-loadbalancer-sourceip-hash</module>
+        <module>rpc-loadbalancer-sourceip-hash-weight</module>
+        <module>rpc-loadbalancer-consistenthash-zk</module>
     </modules>
     <modelVersion>4.0.0</modelVersion>
 
