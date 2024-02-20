@@ -1,6 +1,7 @@
 package com.serendipity.rpc.consumer;
 
 import com.serendipity.rpc.consumer.common.RpcConsumer;
+import com.serendipity.rpc.proxy.api.ProxyFactory;
 import com.serendipity.rpc.proxy.api.async.IAsyncObjectProxy;
 import com.serendipity.rpc.proxy.api.config.ProxyConfig;
 import com.serendipity.rpc.proxy.api.object.ObjectProxy;
@@ -8,6 +9,8 @@ import com.serendipity.rpc.proxy.jdk.JdkProxyFactory;
 import com.serendipity.rpc.registry.api.RegistryService;
 import com.serendipity.rpc.registry.api.config.RegistryConfig;
 import com.serendipity.rpc.registry.zookeeper.ZookeeperRegistryService;
+import com.serendipity.rpc.spi.factory.ExtensionFactory;
+import com.serendipity.rpc.spi.loader.ExtensionLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -54,8 +57,14 @@ public class RpcClient {
      */
     private boolean oneway;
 
-    public RpcClient(String registryAddress, String registryType, String registryLoadBalanceType, String serviceVersion, String serviceGroup, String serializationType, long timeout, boolean async, boolean oneway) {
+    /**
+     * 代理方式
+     */
+    private String proxy;
+
+    public RpcClient(String registryAddress, String registryType, String registryLoadBalanceType, String proxy, String serviceVersion, String serviceGroup, String serializationType, long timeout, boolean async, boolean oneway) {
         this.serviceVersion = serviceVersion;
+        this.proxy = proxy;
         this.timeout = timeout;
         this.serviceGroup = serviceGroup;
         this.serializationType = serializationType;
@@ -86,7 +95,8 @@ public class RpcClient {
     }
 
     public <T> T create(Class<T> interfaceClass) {
-        JdkProxyFactory<T> proxyFactory = new JdkProxyFactory<T>();
+        // JdkProxyFactory<T> proxyFactory = new JdkProxyFactory<T>();
+        ProxyFactory proxyFactory = ExtensionLoader.getExtension(ProxyFactory.class, proxy);
         proxyFactory.init(new ProxyConfig<>(interfaceClass, serviceVersion, serviceGroup, timeout, registryService, RpcConsumer.getInstance(), serializationType, async, oneway));
         return proxyFactory.getProxy(interfaceClass);
     }

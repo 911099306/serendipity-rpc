@@ -9,6 +9,9 @@
     <modules>
         <module>rpc-proxy-api</module>
         <module>rpc-proxy-jdk</module>
+        <module>rpc-proxy-bytebuddy</module>
+        <module>rpc-proxy-cglib</module>
+        <module>rpc-proxy-javassist</module>
     </modules>
     <modelVersion>4.0.0</modelVersion>
 

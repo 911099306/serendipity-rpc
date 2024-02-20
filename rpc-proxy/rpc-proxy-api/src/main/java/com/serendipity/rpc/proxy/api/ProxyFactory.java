@@ -1,6 +1,7 @@
 package com.serendipity.rpc.proxy.api;
 
 import com.serendipity.rpc.proxy.api.config.ProxyConfig;
+import com.serendipity.rpc.spi.annotation.SPI;
 
 /**
  * 代理工厂接口
@@ -9,6 +10,7 @@ import com.serendipity.rpc.proxy.api.config.ProxyConfig;
  * @version 1.0
  * @date 2024/2/18
  **/
+@SPI
 public interface ProxyFactory {
 
     /**

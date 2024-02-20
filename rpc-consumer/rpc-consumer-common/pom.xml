@@ -17,13 +17,31 @@
         </dependency>
         <dependency>
             <groupId>com.serendipity</groupId>
-            <artifactId>rpc-proxy-jdk</artifactId>
+            <artifactId>rpc-registry-zookeeper</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- 动态代理 -->
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-proxy-bytebuddy</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.serendipity</groupId>
-            <artifactId>rpc-registry-zookeeper</artifactId>
+            <artifactId>rpc-proxy-cglib</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-proxy-javassist</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-proxy-jdk</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 </project>

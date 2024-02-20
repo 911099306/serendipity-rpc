@@ -40,7 +40,7 @@ public class ZookeeperRegistryTest {
 
     @Test
     public void testDiscovery() throws Exception {
-        this.registryService.discovery(RegistryService.class.getName(), "serendipity".hashCode());
+        this.registryService.discovery(RegistryService.class.getName(), "serendipity".hashCode(), "");
     }
 
     @Test

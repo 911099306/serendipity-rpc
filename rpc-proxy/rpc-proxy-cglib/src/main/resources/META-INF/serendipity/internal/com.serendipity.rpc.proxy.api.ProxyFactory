@@ -1,0 +1,1 @@
+cglib=com.serendipity.rpc.proxy.cglib.CglibProxyFactory
