@@ -1,6 +1,7 @@
 package com.serendipity.rpc.consumer.common;
 
 import com.serendipity.rpc.common.helper.RpcServiceHelper;
+import com.serendipity.rpc.common.ip.IpUtils;
 import com.serendipity.rpc.common.threadpoll.ClientThreadPool;
 import com.serendipity.rpc.consumer.common.handler.RpcConsumerHandler;
 import com.serendipity.rpc.consumer.common.helper.RpcConsumerHandlerHelper;
@@ -35,11 +36,12 @@ public class RpcConsumer implements Consumer {
     private final Logger logger = LoggerFactory.getLogger(RpcConsumer.class);
     private final Bootstrap bootstrap;
     private final EventLoopGroup eventLoopGroup;
-
     private static volatile RpcConsumer instance;
+    private final String localIp;
     private static Map<String, RpcConsumerHandler> handlerMap = new ConcurrentHashMap<>();
 
     private RpcConsumer() {
+        localIp = IpUtils.getLocalHostIp();
         bootstrap = new Bootstrap();
         eventLoopGroup = new NioEventLoopGroup(4);
         bootstrap.group(eventLoopGroup)
@@ -78,7 +80,7 @@ public class RpcConsumer implements Consumer {
         String serviceKey = RpcServiceHelper.buildServiceKey(request.getClassName(), request.getVersion(), request.getGroup());
         Object[] params = request.getParameters();
         int invokerHashCode = (params == null || params.length <= 0) ? serviceKey.hashCode() : params[0].hashCode();
-        ServiceMeta serviceMeta = registryService.discovery(serviceKey, invokerHashCode);
+        ServiceMeta serviceMeta = registryService.discovery(serviceKey, invokerHashCode,localIp);
 
         if (serviceMeta != null) {
             RpcConsumerHandler handler = RpcConsumerHandlerHelper.get(serviceMeta);

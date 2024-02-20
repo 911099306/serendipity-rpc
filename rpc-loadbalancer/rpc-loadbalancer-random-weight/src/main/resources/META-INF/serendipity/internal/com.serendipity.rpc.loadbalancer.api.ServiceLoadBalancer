@@ -1,0 +1,1 @@
+randomweight=com.serendipity.rpc.loadbalancer.random.weight.RandomWeightServiceLoadBalancer

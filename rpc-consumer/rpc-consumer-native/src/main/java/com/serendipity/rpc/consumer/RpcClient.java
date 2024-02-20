@@ -10,6 +10,7 @@ import com.serendipity.rpc.registry.api.config.RegistryConfig;
 import com.serendipity.rpc.registry.zookeeper.ZookeeperRegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 /**
  * 服务消费客户端
@@ -53,14 +54,14 @@ public class RpcClient {
      */
     private boolean oneway;
 
-    public RpcClient(String registryAddress, String registryType, String serviceVersion, String serviceGroup, String serializationType, long timeout, boolean async, boolean oneway) {
+    public RpcClient(String registryAddress, String registryType, String registryLoadBalanceType, String serviceVersion, String serviceGroup, String serializationType, long timeout, boolean async, boolean oneway) {
         this.serviceVersion = serviceVersion;
         this.timeout = timeout;
         this.serviceGroup = serviceGroup;
         this.serializationType = serializationType;
         this.async = async;
         this.oneway = oneway;
-        this.registryService = this.getRegistryService(registryAddress, registryType);
+        this.registryService = this.getRegistryService(registryAddress, registryType, registryLoadBalanceType);
     }
 
     /**
@@ -69,16 +70,17 @@ public class RpcClient {
      * @param registryAddress 注册中心地址
      * @param registryType    注册中心类型
      */
-    private RegistryService getRegistryService(String registryAddress, String registryType) {
-        if (registryType == null) {
-            throw new IllegalArgumentException("RpcClient: registry type is null~~");
+    private RegistryService getRegistryService(String registryAddress, String registryType, String registryLoadBalanceType) {
+        if (StringUtils.isEmpty(registryType)) {
+            throw new IllegalArgumentException("registry type is null~~");
         }
         // TODO：SPI扩展
         RegistryService registryService = new ZookeeperRegistryService();
         try {
-            registryService.init(new RegistryConfig(registryAddress, registryType));
+            registryService.init(new RegistryConfig(registryAddress, registryType, registryLoadBalanceType));
         } catch (Exception e) {
-            logger.info("RpcClient: RpcClient init registry service throws exception:{}", e);
+            logger.error("RpcClient init registry service throws exception:{}", e);
+            throw new RuntimeException(e.getMessage(), e);
         }
         return registryService;
     }

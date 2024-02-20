@@ -11,6 +11,8 @@ import com.serendipity.rpc.protocol.enumeration.RpcType;
 import com.serendipity.rpc.protocol.header.RpcHeader;
 import com.serendipity.rpc.protocol.request.RpcRequest;
 import com.serendipity.rpc.protocol.response.RpcResponse;
+import com.serendipity.rpc.reflect.api.ReflectInvoker;
+import com.serendipity.rpc.spi.loader.ExtensionLoader;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -40,11 +42,11 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
     /**
      * 调用采用哪种类型调用真实方法
      */
-    private final String reflectType;
+    private ReflectInvoker reflectInvoker;
 
-    public RpcProviderHandler(String reflectType, Map<String, Object> handlerMap){
-        this.reflectType = reflectType;
+    public RpcProviderHandler(String reflectType, Map<String, Object> handlerMap) {
         this.handlerMap = handlerMap;
+        this.reflectInvoker = ExtensionLoader.getExtension(ReflectInvoker.class, reflectType);
     }
 
     @Override
@@ -68,7 +70,7 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
             } catch (Throwable t) {
                 response.setError(t.toString());
                 header.setStatus((byte) RpcStatus.FAIL.getCode());
-                logger.error("RPC Server handle request error",t);
+                logger.error("RPC Server handle request error", t);
             }
             responseRpcProtocol.setHeader(header);
             responseRpcProtocol.setBody(response);
@@ -95,61 +97,18 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
 
         logger.debug(serviceClass.getName());
         logger.debug(methodName);
-        if (parameterTypes != null && parameterTypes.length > 0){
+        if (parameterTypes != null && parameterTypes.length > 0) {
             for (int i = 0; i < parameterTypes.length; ++i) {
                 logger.debug(parameterTypes[i].getName());
             }
         }
 
-        if (parameters != null && parameters.length > 0){
+        if (parameters != null && parameters.length > 0) {
             for (int i = 0; i < parameters.length; ++i) {
                 logger.debug(parameters[i].toString());
             }
         }
-        return invokeMethod(serviceBean, serviceClass, methodName, parameterTypes, parameters);
-    }
-
-    /**
-     * 根据传递的 reflectType 选择合适的代理方式
-     * @param serviceBean
-     * @param serviceClass
-     * @param methodName
-     * @param parameterTypes
-     * @param parameters
-     * @return
-     * @throws Throwable
-     */
-    private Object invokeMethod(Object serviceBean, Class<?> serviceClass, String methodName, Class<?>[] parameterTypes, Object[] parameters) throws Throwable {
-        switch (this.reflectType){
-            case RpcConstants.REFLECT_TYPE_JDK:
-                return this.invokeJDKMethod(serviceBean, serviceClass, methodName, parameterTypes, parameters);
-            case RpcConstants.REFLECT_TYPE_CGLIB:
-                return this.invokeCGLibMethod(serviceBean, serviceClass, methodName, parameterTypes, parameters);
-            default:
-                throw new IllegalArgumentException("not support reflect type");
-        }
-    }
-
-    /**
-     * JDK 代理方式
-     */
-    private Object invokeJDKMethod(Object serviceBean, Class<?> serviceClass, String methodName, Class<?>[] parameterTypes, Object[] parameters) throws Throwable {
-        // JDK reflect
-        logger.info("use jdk reflect type invoke method...");
-        Method method = serviceClass.getMethod(methodName, parameterTypes);
-        method.setAccessible(true);
-        return method.invoke(serviceBean, parameters);
-    }
-
-    /**
-     * CGLib代理方式
-     */
-    private Object invokeCGLibMethod(Object serviceBean, Class<?> serviceClass, String methodName, Class<?>[] parameterTypes, Object[] parameters) throws Throwable {
-        // Cglib reflect
-        logger.info("use cglib reflect type invoke method...");
-        FastClass serviceFastClass = FastClass.create(serviceClass);
-        FastMethod serviceFastMethod = serviceFastClass.getMethod(methodName, parameterTypes);
-        return serviceFastMethod.invoke(serviceBean, parameters);
+        return this.reflectInvoker.invokeMethod(serviceBean, serviceClass, methodName, parameterTypes, parameters);
     }
 
     @Override
