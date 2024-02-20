@@ -1,7 +1,9 @@
 package com.serendipity.rpc.registry.zookeeper;
 
 import com.serendipity.rpc.common.helper.RpcServiceHelper;
+import com.serendipity.rpc.constants.RpcConstants;
 import com.serendipity.rpc.loadbalancer.api.ServiceLoadBalancer;
+import com.serendipity.rpc.loadbalancer.helper.ServiceLoadBalancerHelper;
 import com.serendipity.rpc.loadbalancer.random.RandomServiceLoadBalancer;
 import com.serendipity.rpc.protocol.meta.ServiceMeta;
 import com.serendipity.rpc.registry.api.RegistryService;
@@ -55,6 +57,11 @@ public class ZookeeperRegistryService implements RegistryService {
     private ServiceLoadBalancer<ServiceInstance<ServiceMeta>> serviceLoadBalancer;
 
     /**
+     * 增强负载均衡接口
+     */
+    private ServiceLoadBalancer<ServiceMeta> serviceEnhancedLoadBalancer;
+
+    /**
      * 构建 CuratorFramework 客户端， 并初始化 ServiceDiscovery
      */
     @Override
@@ -68,8 +75,12 @@ public class ZookeeperRegistryService implements RegistryService {
                 .basePath(ZK_BASE_PATH)
                 .build();
         this.serviceDiscovery.start();
-        this.serviceLoadBalancer = ExtensionLoader.getExtension(ServiceLoadBalancer.class, registryConfig.getRegistryLoadBalanceType());
-        // this.serviceLoadBalancer = new RandomServiceLoadBalancer<ServiceInstance<ServiceMeta>>();
+        // 根据前缀 选择负载均衡方式
+        if (registryConfig.getRegistryLoadBalanceType().toLowerCase().contains(RpcConstants.SERVICE_ENHANCED_LOAD_BALANCER_PREFIX)){
+            this.serviceEnhancedLoadBalancer = ExtensionLoader.getExtension(ServiceLoadBalancer.class, registryConfig.getRegistryLoadBalanceType());
+        }else{
+            this.serviceLoadBalancer = ExtensionLoader.getExtension(ServiceLoadBalancer.class, registryConfig.getRegistryLoadBalanceType());
+        }
     }
 
     /**
@@ -88,7 +99,6 @@ public class ZookeeperRegistryService implements RegistryService {
                 .payload(serviceMeta)
                 .build();
         serviceDiscovery.registerService(serviceInstance);
-
     }
 
     /**
@@ -119,7 +129,14 @@ public class ZookeeperRegistryService implements RegistryService {
     @Override
     public ServiceMeta discovery(String serviceName, int invokerHashCode, String sourceIp) throws Exception {
         Collection<ServiceInstance<ServiceMeta>> serviceInstances = serviceDiscovery.queryForInstances(serviceName);
-        ServiceInstance<ServiceMeta> instance = serviceLoadBalancer.select((List<ServiceInstance<ServiceMeta>>) serviceInstances, invokerHashCode, sourceIp);
+        if (serviceLoadBalancer != null){
+            return getServiceMetaInstance(invokerHashCode, sourceIp, (List<ServiceInstance<ServiceMeta>>) serviceInstances);
+        }
+        return this.serviceEnhancedLoadBalancer.select(ServiceLoadBalancerHelper.getServiceMetaList((List<ServiceInstance<ServiceMeta>>) serviceInstances), invokerHashCode, sourceIp);
+    }
+
+    private ServiceMeta getServiceMetaInstance(int invokerHashCode, String sourceIp, List<ServiceInstance<ServiceMeta>> serviceInstances) {
+        ServiceInstance<ServiceMeta> instance = this.serviceLoadBalancer.select(serviceInstances, invokerHashCode, sourceIp);
         if (instance != null) {
             return instance.getPayload();
         }

@@ -60,6 +60,12 @@
       <artifactId>rpc-loadbalancer-sourceip-hash-weight</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- 增强型负载均衡 -->
+    <dependency>
+      <groupId>com.serendipity</groupId>
+      <artifactId>rpc-loadbalancer-random-weight-enhanced</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
   </dependencies>
 </project>

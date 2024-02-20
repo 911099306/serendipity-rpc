@@ -3,6 +3,7 @@ package com.serendipity.rpc.provider.common.scanner;
 import com.serendipity.rpc.annotation.RpcService;
 import com.serendipity.rpc.common.helper.RpcServiceHelper;
 import com.serendipity.rpc.common.scanner.ClassScanner;
+import com.serendipity.rpc.constants.RpcConstants;
 import com.serendipity.rpc.protocol.meta.ServiceMeta;
 import com.serendipity.rpc.registry.api.RegistryService;
 import org.slf4j.Logger;
@@ -50,7 +51,7 @@ public class RpcServiceScanner extends ClassScanner {
                 RpcService rpcService = clazz.getAnnotation(RpcService.class);
                 if (rpcService != null) {
                     //构建当前类待注册到注册中心的的元数据信息
-                    ServiceMeta serviceMeta = new ServiceMeta(getServiceName(rpcService), rpcService.version(), rpcService.group(), host, port);
+                    ServiceMeta serviceMeta = new ServiceMeta(getServiceName(rpcService), rpcService.version(), rpcService.group(), host, port, getWeight(rpcService.weight()));
                     // 将元数据注册到注册中心
                     registryService.register(serviceMeta);
                     // 构造 k-v 存入本地map
@@ -65,6 +66,20 @@ public class RpcServiceScanner extends ClassScanner {
         return handlerMap;
     }
 
+    /**
+     * 将超出范围的权重，设置为合适的权重
+     * @param weight 设定的权重
+     * @return 合适的权重
+     */
+    private static int getWeight(int weight) {
+        if (weight < RpcConstants.SERVICE_WEIGHT_MIN){
+            weight = RpcConstants.SERVICE_WEIGHT_MIN;
+        }
+        if (weight > RpcConstants.SERVICE_WEIGHT_MAX){
+            weight = RpcConstants.SERVICE_WEIGHT_MAX;
+        }
+        return weight;
+    }
 
     /**
      * 获取serviceName

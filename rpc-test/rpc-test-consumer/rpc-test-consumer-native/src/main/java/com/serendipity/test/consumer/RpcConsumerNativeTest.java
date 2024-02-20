@@ -21,7 +21,7 @@ public class RpcConsumerNativeTest {
     private static final Logger logger = LoggerFactory.getLogger(RpcConsumerNativeTest.class);
 
     public static void main(String[] args) {
-        RpcClient rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper","zkconsistenthash", "jdk","1.0.0", "serendipity", "fst", 3000, false, false);
+        RpcClient rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper","enhanced_randomweight", "jdk","1.0.0", "serendipity", "fst", 3000, false, false);
         DemoService demoService = rpcClient.create(DemoService.class);
         String result = demoService.hello("serendipity");
         logger.info("RpcConsumerNativeTest 获得的结果: {}", result);
