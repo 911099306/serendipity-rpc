@@ -10,6 +10,9 @@
         <module>rpc-serialization-jdk</module>
         <module>rpc-serialization-json</module>
         <module>rpc-serialization-hessian2</module>
+        <module>rpc-serialization-protostuff</module>
+        <module>rpc-serialization-fst</module>
+        <module>rpc-serialization-kryo</module>
     </modules>
     <modelVersion>4.0.0</modelVersion>
 
