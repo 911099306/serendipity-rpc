@@ -5,8 +5,6 @@ import com.caucho.hessian.io.Hessian2Output;
 import com.serendipity.rpc.common.exception.SerializerException;
 import com.serendipity.rpc.serialization.api.Serialization;
 import com.serendipity.rpc.spi.annotation.SPIClass;
-import com.sun.xml.internal.messaging.saaj.soap.impl.HeaderImpl;
-import jdk.nashorn.internal.objects.NativeUint8Array;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
