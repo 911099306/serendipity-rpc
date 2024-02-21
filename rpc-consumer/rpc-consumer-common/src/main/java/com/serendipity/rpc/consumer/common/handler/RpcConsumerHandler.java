@@ -1,8 +1,10 @@
 package com.serendipity.rpc.consumer.common.handler;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.serendipity.rpc.constants.RpcConstants;
 import com.serendipity.rpc.consumer.common.context.RpcContext;
 import com.serendipity.rpc.protocol.RpcProtocol;
+import com.serendipity.rpc.protocol.enumeration.RpcType;
 import com.serendipity.rpc.protocol.header.RpcHeader;
 import com.serendipity.rpc.protocol.request.RpcRequest;
 import com.serendipity.rpc.protocol.response.RpcResponse;
@@ -63,16 +65,48 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
             logger.info("服务消费者接收到的数据 为空null ~~~");
             return;
         }
-        logger.info("服务消费者接收到的数据===>>>{}", JSONObject.toJSONString(protocol));
+        this.handlerMessage(protocol);
+    }
+
+    /**
+     * 解析请求消息协议，判断是心跳数据包 还是 普通 response 信息
+     *
+     * @param protocol 消息
+     */
+    private void handlerMessage(RpcProtocol<RpcResponse> protocol) {
         RpcHeader header = protocol.getHeader();
+        if (header.getMsgType() == (byte) RpcType.HEARTBEAT_TO_CONSUMER.getType()) {
+            this.handlerHeartbeatMessage(protocol);
+        } else if (header.getMsgType() == (byte) RpcType.RESPONSE.getType()) {
+            this.handlerResponseMessage(protocol, header);
+        }
+    }
+
+    /**
+     * 处理心跳消息
+     *
+     * @param protocol 消息
+     */
+    private void handlerHeartbeatMessage(RpcProtocol<RpcResponse> protocol) {
+        // 此处简单打印即可,实际场景可不做处理
+        logger.info("receive service provider heartbeat message:{}", protocol.getBody().getResult());
+    }
+
+    /**
+     * 处理响应消息
+     *
+     * @param protocol 消息
+     * @param header   消息头
+     */
+    private void handlerResponseMessage(RpcProtocol<RpcResponse> protocol, RpcHeader header) {
+        logger.info("服务消费者接收到的数据===>>>{}", JSONObject.toJSONString(protocol));
         long requestId = header.getRequestId();
-        // pendingResponse.put(requestId, protocol);
         RPCFuture rpcFuture = pendingRPC.remove(requestId);
         if (rpcFuture != null) {
-            // 接收到 提供者 相应的数据， 将其交予 Future
             rpcFuture.done(protocol);
         }
     }
+
 
     /**
      * 服务消费者向服务提供者发送请求

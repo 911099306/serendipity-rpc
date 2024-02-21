@@ -2,6 +2,7 @@ package com.serendipity.rpc.registry.api;
 
 import com.serendipity.rpc.protocol.meta.ServiceMeta;
 import com.serendipity.rpc.registry.api.config.RegistryConfig;
+import com.serendipity.rpc.spi.annotation.SPI;
 
 import java.io.IOException;
 
@@ -12,6 +13,7 @@ import java.io.IOException;
  * @version 1.0
  * @date 2024/2/18
  **/
+@SPI
 public interface RegistryService {
 
     /**

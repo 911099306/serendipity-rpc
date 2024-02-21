@@ -7,6 +7,7 @@ import com.serendipity.rpc.provider.common.server.api.Server;
 import com.serendipity.rpc.registry.api.RegistryService;
 import com.serendipity.rpc.registry.api.config.RegistryConfig;
 import com.serendipity.rpc.registry.zookeeper.ZookeeperRegistryService;
+import com.serendipity.rpc.spi.loader.ExtensionLoader;
 import io.netty.bootstrap.ServerBootstrap;
 
 import io.netty.channel.ChannelFuture;
@@ -78,7 +79,8 @@ public class BaseServer implements Server {
         // TODO 后续扩展支持 SPI
         RegistryService registryService = null;
         try {
-            registryService = new ZookeeperRegistryService();
+            // registryService = new ZookeeperRegistryService();
+            registryService = ExtensionLoader.getExtension(RegistryService.class, registryType);
             registryService.init(new RegistryConfig(registryAddress, registryType, registryLoadBalanceType));
         } catch (Exception e) {
             logger.error("RPC Server init error", e);

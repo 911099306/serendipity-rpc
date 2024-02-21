@@ -52,37 +52,90 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcProtocol<RpcRequest> protocol) throws Exception {
         ServerThreadPool.submit(() -> {
-            // 获取对象头
-            RpcHeader header = protocol.getHeader();
-            // 设置消息类型
-            header.setMsgType((byte) RpcType.RESPONSE.getType());
-            // 获取消息体
-            RpcRequest request = protocol.getBody();
-            logger.debug("Receive request " + header.getRequestId());
-            RpcProtocol<RpcResponse> responseRpcProtocol = new RpcProtocol<RpcResponse>();
-            RpcResponse response = new RpcResponse();
-            try {
-                Object result = handle(request);
-                response.setResult(result);
-                response.setAsync(request.getAsync());
-                response.setOneway(request.getOneway());
-                header.setStatus((byte) RpcStatus.SUCCESS.getCode());
-            } catch (Throwable t) {
-                response.setError(t.toString());
-                header.setStatus((byte) RpcStatus.FAIL.getCode());
-                logger.error("RPC Server handle request error", t);
-            }
-            responseRpcProtocol.setHeader(header);
-            responseRpcProtocol.setBody(response);
+            RpcProtocol<RpcResponse> responseRpcProtocol = handlerMessage(protocol);
             ctx.writeAndFlush(responseRpcProtocol).addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                    logger.debug("Send response for request " + header.getRequestId());
+                    logger.debug("Send response for request " + protocol.getHeader().getRequestId());
                 }
             });
         });
     }
 
+    /**
+     * 解析请求消息协议，判断是心跳数据包 还是 普通request信息
+     *
+     * @param protocol 协议内容
+     * @return 响应结果
+     */
+    private RpcProtocol<RpcResponse> handlerMessage(RpcProtocol<RpcRequest> protocol) {
+        RpcProtocol<RpcResponse> responseRpcProtocol = null;
+        RpcHeader header = protocol.getHeader();
+        // 根据消息类型，进行不同的处理
+        if (header.getMsgType() == (byte) RpcType.HEARTBEAT_FROM_CONSUMER.getType()) {
+            responseRpcProtocol = handlerHeartbeatMessage(protocol, header);
+        } else if (header.getMsgType() == (byte) RpcType.REQUEST.getType()) {
+            responseRpcProtocol = handlerRequestMessage(protocol, header);
+        }
+        return responseRpcProtocol;
+    }
+
+    /**
+     * 处理心跳数据
+     *
+     * @param protocol 协议数据
+     * @param header   消息头
+     * @return 响应结果
+     */
+    private RpcProtocol<RpcResponse> handlerHeartbeatMessage(RpcProtocol<RpcRequest> protocol, RpcHeader header) {
+        header.setMsgType((byte) RpcType.HEARTBEAT_TO_CONSUMER.getType());
+        RpcRequest request = protocol.getBody();
+        RpcProtocol<RpcResponse> responseRpcProtocol = new RpcProtocol<RpcResponse>();
+        RpcResponse response = new RpcResponse();
+        response.setResult(RpcConstants.HEARTBEAT_PONG);
+        response.setAsync(request.getAsync());
+        response.setOneway(request.getOneway());
+        header.setStatus((byte) RpcStatus.SUCCESS.getCode());
+        responseRpcProtocol.setHeader(header);
+        responseRpcProtocol.setBody(response);
+        return responseRpcProtocol;
+    }
+
+    /**
+     * 处理请求消息
+     *
+     * @param protocol 协议信息
+     * @param header   协议头
+     * @return 响应结果
+     */
+    private RpcProtocol<RpcResponse> handlerRequestMessage(RpcProtocol<RpcRequest> protocol, RpcHeader header) {
+        header.setMsgType((byte) RpcType.RESPONSE.getType());
+        RpcRequest request = protocol.getBody();
+        logger.debug("Receive request " + header.getRequestId());
+        RpcProtocol<RpcResponse> responseRpcProtocol = new RpcProtocol<RpcResponse>();
+        RpcResponse response = new RpcResponse();
+        try {
+            Object result = handle(request);
+            response.setResult(result);
+            response.setAsync(request.getAsync());
+            response.setOneway(request.getOneway());
+            header.setStatus((byte) RpcStatus.SUCCESS.getCode());
+        } catch (Throwable t) {
+            response.setError(t.toString());
+            header.setStatus((byte) RpcStatus.FAIL.getCode());
+            logger.error("RPC Server handle request error", t);
+        }
+        responseRpcProtocol.setHeader(header);
+        responseRpcProtocol.setBody(response);
+        return responseRpcProtocol;
+    }
+
+    /**
+     * 解析消息请求，并通过反射调用请求服务返回响应结果
+     * @param request 请求信息
+     * @return 请求服务响应结果
+     * @throws Throwable 抛出异常
+     */
     private Object handle(RpcRequest request) throws Throwable {
         String serviceKey = RpcServiceHelper.buildServiceKey(request.getClassName(), request.getVersion(), request.getGroup());
         Object serviceBean = handlerMap.get(serviceKey);

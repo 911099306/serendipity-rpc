@@ -8,6 +8,7 @@ import com.serendipity.rpc.loadbalancer.random.RandomServiceLoadBalancer;
 import com.serendipity.rpc.protocol.meta.ServiceMeta;
 import com.serendipity.rpc.registry.api.RegistryService;
 import com.serendipity.rpc.registry.api.config.RegistryConfig;
+import com.serendipity.rpc.spi.annotation.SPIClass;
 import com.serendipity.rpc.spi.loader.ExtensionLoader;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -16,6 +17,8 @@ import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.curator.x.discovery.ServiceDiscoveryBuilder;
 import org.apache.curator.x.discovery.ServiceInstance;
 import org.apache.curator.x.discovery.details.JsonInstanceSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -29,6 +32,7 @@ import java.util.Random;
  * @version 1.0
  * @date 2024/2/18
  **/
+@SPIClass
 public class ZookeeperRegistryService implements RegistryService {
 
     /**
@@ -64,8 +68,11 @@ public class ZookeeperRegistryService implements RegistryService {
     /**
      * 构建 CuratorFramework 客户端， 并初始化 ServiceDiscovery
      */
+    private final Logger logger = LoggerFactory.getLogger(ZookeeperRegistryService.class);
+
     @Override
     public void init(RegistryConfig registryConfig) throws Exception {
+        logger.info("使用zookeeper作为注册中心...");
         CuratorFramework client = CuratorFrameworkFactory.newClient(registryConfig.getRegistryAddr(), new ExponentialBackoffRetry(BASE_SLEEP_TIME_MS, MAX_RETRIES));
         client.start();
         JsonInstanceSerializer<ServiceMeta> serializer = new JsonInstanceSerializer<>(ServiceMeta.class);
@@ -76,9 +83,9 @@ public class ZookeeperRegistryService implements RegistryService {
                 .build();
         this.serviceDiscovery.start();
         // 根据前缀 选择负载均衡方式
-        if (registryConfig.getRegistryLoadBalanceType().toLowerCase().contains(RpcConstants.SERVICE_ENHANCED_LOAD_BALANCER_PREFIX)){
+        if (registryConfig.getRegistryLoadBalanceType().toLowerCase().contains(RpcConstants.SERVICE_ENHANCED_LOAD_BALANCER_PREFIX)) {
             this.serviceEnhancedLoadBalancer = ExtensionLoader.getExtension(ServiceLoadBalancer.class, registryConfig.getRegistryLoadBalanceType());
-        }else{
+        } else {
             this.serviceLoadBalancer = ExtensionLoader.getExtension(ServiceLoadBalancer.class, registryConfig.getRegistryLoadBalanceType());
         }
     }
@@ -129,7 +136,7 @@ public class ZookeeperRegistryService implements RegistryService {
     @Override
     public ServiceMeta discovery(String serviceName, int invokerHashCode, String sourceIp) throws Exception {
         Collection<ServiceInstance<ServiceMeta>> serviceInstances = serviceDiscovery.queryForInstances(serviceName);
-        if (serviceLoadBalancer != null){
+        if (serviceLoadBalancer != null) {
             return getServiceMetaInstance(invokerHashCode, sourceIp, (List<ServiceInstance<ServiceMeta>>) serviceInstances);
         }
         return this.serviceEnhancedLoadBalancer.select(ServiceLoadBalancerHelper.getServiceMetaList((List<ServiceInstance<ServiceMeta>>) serviceInstances), invokerHashCode, sourceIp);

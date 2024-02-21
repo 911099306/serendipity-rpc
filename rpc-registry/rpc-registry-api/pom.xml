@@ -14,6 +14,13 @@
       <artifactId>rpc-protocol</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <!-- SPI -->
+    <dependency>
+      <groupId>com.serendipity</groupId>
+      <artifactId>rpc-spi</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- SPI 负载均衡方式 -->
     <dependency>
       <groupId>com.serendipity</groupId>
