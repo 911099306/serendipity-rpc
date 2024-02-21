@@ -24,6 +24,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.ConnectException;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -57,12 +58,20 @@ public class RpcConsumer implements Consumer {
      */
     private int scanNotActiveChannelInterval = 60000;
 
-    // 重试间隔时间
+    /**
+     * 重试间隔时间
+     */
     private int retryInterval = 1000;
 
-    // 重试次数
+    /**
+     * 重试次数
+     */
     private int retryTimes = 3;
 
+    /**
+     * 当前重试次数
+     */
+    private volatile int currentConnectRetryTimes = 0;
 
     private RpcConsumer(int heartbeatInterval, int scanNotActiveChannelInterval, int retryInterval, int retryTimes) {
         if (heartbeatInterval > 0) {
@@ -131,12 +140,16 @@ public class RpcConsumer implements Consumer {
         String serviceKey = RpcServiceHelper.buildServiceKey(request.getClassName(), request.getVersion(), request.getGroup());
         Object[] params = request.getParameters();
         int invokerHashCode = (params == null || params.length <= 0) ? serviceKey.hashCode() : params[0].hashCode();
-        ServiceMeta serviceMeta = this.getServiceMeta(registryService, serviceKey, invokerHashCode);
-
+        ServiceMeta serviceMeta = this.getServiceMetaWithRetry(registryService, serviceKey, invokerHashCode);
+        RpcConsumerHandler handler = null;
         if (serviceMeta != null) {
-            return getRpcConsumerHandlerWithCache(serviceMeta).sendRequest(protocol, request.getAsync(), request.getOneway());
+            handler = getRpcConsumerHandlerWithRetry(serviceMeta);
         }
-        return null;
+        RPCFuture rpcFuture = null;
+        if (handler != null) {
+            rpcFuture = handler.sendRequest(protocol, request.getAsync(), request.getOneway());
+        }
+        return rpcFuture;
     }
 
     /**
@@ -148,7 +161,7 @@ public class RpcConsumer implements Consumer {
      * @return 服务元数据
      * @throws Exception 异常
      */
-    private ServiceMeta getServiceMeta(RegistryService registryService, String serviceKey, int invokerHashCode) throws Exception {
+    private ServiceMeta getServiceMetaWithRetry(RegistryService registryService, String serviceKey, int invokerHashCode) throws Exception {
         // 首次获取服务元数据信息，如果获取到，则直接返回，否则进行重试
         logger.info("获取服务提供者元数据...");
         ServiceMeta serviceMeta = registryService.discovery(serviceKey, invokerHashCode, localIp);
@@ -164,6 +177,36 @@ public class RpcConsumer implements Consumer {
             }
         }
         return serviceMeta;
+    }
+
+
+    /**
+     * 获取RpcConsumerHandler
+     *
+     * @param serviceMeta 服务元数据
+     * @return 处理器
+     * @throws InterruptedException 抛出异常
+     */
+    private RpcConsumerHandler getRpcConsumerHandlerWithRetry(ServiceMeta serviceMeta) throws InterruptedException {
+        logger.info("服务消费者连接服务提供者...");
+        RpcConsumerHandler handler = null;
+        try {
+            handler = this.getRpcConsumerHandlerWithCache(serviceMeta);
+        } catch (Exception e) {
+            // 连接异常
+            if (e instanceof ConnectException) {
+                // 启动重试机制
+                if (handler == null) {
+                    if (currentConnectRetryTimes < retryTimes) {
+                        currentConnectRetryTimes++;
+                        logger.info("服务消费者连接服务提供者第【{}】次重试...", currentConnectRetryTimes);
+                        handler = this.getRpcConsumerHandlerWithRetry(serviceMeta);
+                        Thread.sleep(retryInterval);
+                    }
+                }
+            }
+        }
+        return handler;
     }
 
     /**
@@ -192,7 +235,10 @@ public class RpcConsumer implements Consumer {
         channelFuture.addListener((ChannelFutureListener) listener -> {
             if (channelFuture.isSuccess()) {
                 logger.info("connect rpc server {} on port {} success.", serviceMeta.getServiceAddr(), serviceMeta.getServicePort());
+                // 添加连接信息，在服务消费者端记录每个服务提供者实例的连接次数
                 ConnectionsContext.add(serviceMeta);
+                // 连接成功，将当前连接重试次数设置为0
+                currentConnectRetryTimes = 0;
             } else {
                 logger.error("connect rpc server {} on port {} failed.", serviceMeta.getServiceAddr(), serviceMeta.getServicePort());
                 channelFuture.cause().printStackTrace();
