@@ -20,8 +20,8 @@ public class ConsumerNativeDemo {
     private RpcClient rpcClient;
 
     @Before
-    public void initRpcClient(){
-        rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper", "enhanced_leastconnections","cglib","1.0.0", "serendipity", "jdk", 3000, false, false,3000, 6000);
+    public void initRpcClient() {
+        rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper", "enhanced_leastconnections", "cglib", "1.0.0", "serendipity", "jdk", 3000, false, false, 3000, 6000, 1000, 3);
     }
 
 
@@ -30,8 +30,8 @@ public class ConsumerNativeDemo {
         DemoService demoService = rpcClient.create(DemoService.class);
         String result = demoService.hello("binghe");
         LOGGER.info("返回的结果数据===>>> " + result);
-        //rpcClient.shutdown();
-        while (true){
+        // rpcClient.shutdown();
+        while (true) {
             Thread.sleep(1000);
         }
     }
