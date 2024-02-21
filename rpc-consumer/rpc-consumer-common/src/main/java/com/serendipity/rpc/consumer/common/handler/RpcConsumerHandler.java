@@ -8,6 +8,7 @@ import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.enumeration.RpcStatus;
 import com.serendipity.rpc.protocol.enumeration.RpcType;
 import com.serendipity.rpc.protocol.header.RpcHeader;
+import com.serendipity.rpc.protocol.header.RpcHeaderFactory;
 import com.serendipity.rpc.protocol.request.RpcRequest;
 import com.serendipity.rpc.protocol.response.RpcResponse;
 import com.serendipity.rpc.proxy.api.consumer.Consumer;
@@ -17,6 +18,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +52,21 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
         return remotePeer;
     }
 
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent){
+            //发送一次心跳数据
+            RpcHeader header = RpcHeaderFactory.getRequestHeader(RpcConstants.SERIALIZATION_PROTOSTUFF, RpcType.HEARTBEAT_FROM_CONSUMER.getType());
+            RpcProtocol<RpcRequest> requestRpcProtocol = new RpcProtocol<RpcRequest>();
+            RpcRequest rpcRequest = new RpcRequest();
+            rpcRequest.setParameters(new Object[]{RpcConstants.HEARTBEAT_PING});
+            requestRpcProtocol.setHeader(header);
+            requestRpcProtocol.setBody(rpcRequest);
+            ctx.writeAndFlush(requestRpcProtocol);
+        }else {
+            super.userEventTriggered(ctx, evt);
+        }
+    }
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);

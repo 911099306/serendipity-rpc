@@ -68,7 +68,7 @@ public class RpcConsumer implements Consumer {
         eventLoopGroup = new NioEventLoopGroup(4);
         bootstrap.group(eventLoopGroup)
                 .channel(NioSocketChannel.class)
-                .handler(new RpcConsumerInitializer());
+                .handler(new RpcConsumerInitializer(heartbeatInterval));
         this.startHeartbeat();
     }
 
