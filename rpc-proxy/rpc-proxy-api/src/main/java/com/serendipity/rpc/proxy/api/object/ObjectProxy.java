@@ -1,6 +1,7 @@
 package com.serendipity.rpc.proxy.api.object;
 
 import com.serendipity.rpc.protocol.RpcProtocol;
+import com.serendipity.rpc.protocol.enumeration.RpcType;
 import com.serendipity.rpc.protocol.header.RpcHeader;
 import com.serendipity.rpc.protocol.header.RpcHeaderFactory;
 import com.serendipity.rpc.protocol.request.RpcRequest;
@@ -75,7 +76,7 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
         this.clazz = clazz;
     }
 
-    public ObjectProxy(Class<T> clazz, String serviceVersion, String serviceGroup, String serializationType, long timeout,RegistryService registryService, Consumer consumer, boolean async, boolean oneway) {
+    public ObjectProxy(Class<T> clazz, String serviceVersion, String serviceGroup, String serializationType, long timeout, RegistryService registryService, Consumer consumer, boolean async, boolean oneway) {
         this.clazz = clazz;
         this.serviceVersion = serviceVersion;
         this.timeout = timeout;
@@ -106,7 +107,7 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
         }
         RpcProtocol<RpcRequest> requestRpcProtocol = new RpcProtocol<>();
 
-        requestRpcProtocol.setHeader(RpcHeaderFactory.getRequestHeader(serializationType));
+        requestRpcProtocol.setHeader(RpcHeaderFactory.getRequestHeader(serializationType, RpcType.REQUEST.getType()));
 
         RpcRequest request = new RpcRequest();
         request.setVersion(this.serviceVersion);
@@ -141,8 +142,9 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
 
     /**
      * 异步调用方法
+     *
      * @param funcName 方法名称
-     * @param args 方法参数
+     * @param args     方法参数
      * @return
      */
     @Override
@@ -150,7 +152,7 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
         RpcProtocol<RpcRequest> request = createRequest(this.clazz.getName(), funcName, args);
         RPCFuture rpcFuture = null;
         try {
-            rpcFuture = this.consumer.sendRequest(request,registryService);
+            rpcFuture = this.consumer.sendRequest(request, registryService);
         } catch (Exception e) {
             logger.error("async all throws exception:{}", e);
         }
@@ -159,15 +161,16 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
 
     /**
      * 创建请求协议对象
-     * @param className 类名
+     *
+     * @param className  类名
      * @param methodName 方法名
-     * @param args 参数
+     * @param args       参数
      * @return
      */
     private RpcProtocol<RpcRequest> createRequest(String className, String methodName, Object[] args) {
         RpcProtocol<RpcRequest> requestRpcProtocol = new RpcProtocol<>();
 
-        requestRpcProtocol.setHeader(RpcHeaderFactory.getRequestHeader(serializationType));
+        requestRpcProtocol.setHeader(RpcHeaderFactory.getRequestHeader(serializationType, RpcType.REQUEST.getType()));
 
         RpcRequest request = new RpcRequest();
         request.setClassName(className);

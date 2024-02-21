@@ -6,6 +6,7 @@ import com.serendipity.rpc.common.threadpoll.ClientThreadPool;
 import com.serendipity.rpc.consumer.common.handler.RpcConsumerHandler;
 import com.serendipity.rpc.consumer.common.helper.RpcConsumerHandlerHelper;
 import com.serendipity.rpc.consumer.common.initializer.RpcConsumerInitializer;
+import com.serendipity.rpc.consumer.common.manage.ConsumerConnectionManager;
 import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.meta.ServiceMeta;
 import com.serendipity.rpc.protocol.request.RpcRequest;
@@ -22,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 /**
  * 服务消费者
@@ -38,25 +39,65 @@ public class RpcConsumer implements Consumer {
     private final EventLoopGroup eventLoopGroup;
     private static volatile RpcConsumer instance;
     private final String localIp;
-    private static Map<String, RpcConsumerHandler> handlerMap = new ConcurrentHashMap<>();
 
-    private RpcConsumer() {
+    /**
+     * 定时任务发送心跳数据
+     */
+    private ScheduledExecutorService executorService;
+
+    /**
+     * 心跳间隔时间，默认30秒
+     */
+    private int heartbeatInterval = 30000;
+
+    /**
+     * 扫描并移除空闲连接时间，默认60秒
+     */
+    private int scanNotActiveChannelInterval = 60000;
+
+
+    private RpcConsumer(int heartbeatInterval, int scanNotActiveChannelInterval) {
+        if (heartbeatInterval > 0) {
+            this.heartbeatInterval = heartbeatInterval;
+        }
+        if (scanNotActiveChannelInterval > 0) {
+            this.scanNotActiveChannelInterval = scanNotActiveChannelInterval;
+        }
         localIp = IpUtils.getLocalHostIp();
         bootstrap = new Bootstrap();
         eventLoopGroup = new NioEventLoopGroup(4);
         bootstrap.group(eventLoopGroup)
                 .channel(NioSocketChannel.class)
                 .handler(new RpcConsumerInitializer());
+        this.startHeartbeat();
+    }
+
+    private void startHeartbeat() {
+        executorService = Executors.newScheduledThreadPool(2);
+
+        // 扫描并处理所有不活跃的连接任务
+        executorService.scheduleAtFixedRate(() -> {
+            System.out.println("=============scanNotActiveChannel============");
+            ConsumerConnectionManager.scanNotActiveChannel();
+        }, 10, scanNotActiveChannelInterval, TimeUnit.MILLISECONDS);
+
+        // 广播 Ping 消息任务
+        executorService.scheduleAtFixedRate(() -> {
+            System.out.println("=============broadcastPingMessageFromConsumer============");
+            ConsumerConnectionManager.broadcastPingMessageFromConsumer();
+        }, 3, heartbeatInterval, TimeUnit.MILLISECONDS);
+
+
     }
 
     /**
      * 单例模式
      */
-    public static RpcConsumer getInstance() {
+    public static RpcConsumer getInstance(int heartbeatInterval, int scanNotActiveChannelInterval) {
         if (instance == null) {
             synchronized (RpcConsumer.class) {
                 if (instance == null) {
-                    instance = new RpcConsumer();
+                    instance = new RpcConsumer(heartbeatInterval, scanNotActiveChannelInterval);
                 }
             }
         }
@@ -80,7 +121,7 @@ public class RpcConsumer implements Consumer {
         String serviceKey = RpcServiceHelper.buildServiceKey(request.getClassName(), request.getVersion(), request.getGroup());
         Object[] params = request.getParameters();
         int invokerHashCode = (params == null || params.length <= 0) ? serviceKey.hashCode() : params[0].hashCode();
-        ServiceMeta serviceMeta = registryService.discovery(serviceKey, invokerHashCode,localIp);
+        ServiceMeta serviceMeta = registryService.discovery(serviceKey, invokerHashCode, localIp);
 
         if (serviceMeta != null) {
             RpcConsumerHandler handler = RpcConsumerHandlerHelper.get(serviceMeta);

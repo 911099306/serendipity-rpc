@@ -2,12 +2,14 @@ package com.serendipity.rpc.consumer.common.handler;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.serendipity.rpc.constants.RpcConstants;
+import com.serendipity.rpc.consumer.common.cache.ConsumerChannelCache;
 import com.serendipity.rpc.consumer.common.context.RpcContext;
 import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.enumeration.RpcType;
 import com.serendipity.rpc.protocol.header.RpcHeader;
 import com.serendipity.rpc.protocol.request.RpcRequest;
 import com.serendipity.rpc.protocol.response.RpcResponse;
+import com.serendipity.rpc.proxy.api.consumer.Consumer;
 import com.serendipity.rpc.proxy.api.future.RPCFuture;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -51,6 +53,7 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         this.remotePeer = this.channel.remoteAddress();
+        ConsumerChannelCache.add(ctx.channel());
     }
 
     @Override
@@ -65,7 +68,7 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
             logger.info("服务消费者接收到的数据 为空null ~~~");
             return;
         }
-        this.handlerMessage(protocol);
+        this.handlerMessage(protocol, channelHandlerContext.channel());
     }
 
     /**
@@ -73,10 +76,10 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
      *
      * @param protocol 消息
      */
-    private void handlerMessage(RpcProtocol<RpcResponse> protocol) {
+    private void handlerMessage(RpcProtocol<RpcResponse> protocol, Channel channel) {
         RpcHeader header = protocol.getHeader();
         if (header.getMsgType() == (byte) RpcType.HEARTBEAT_TO_CONSUMER.getType()) {
-            this.handlerHeartbeatMessage(protocol);
+            this.handlerHeartbeatMessage(protocol, channel);
         } else if (header.getMsgType() == (byte) RpcType.RESPONSE.getType()) {
             this.handlerResponseMessage(protocol, header);
         }
@@ -87,9 +90,9 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
      *
      * @param protocol 消息
      */
-    private void handlerHeartbeatMessage(RpcProtocol<RpcResponse> protocol) {
+    private void handlerHeartbeatMessage(RpcProtocol<RpcResponse> protocol, Channel channel) {
         // 此处简单打印即可,实际场景可不做处理
-        logger.info("receive service provider heartbeat message:{}", protocol.getBody().getResult());
+        logger.info("receive service provider heartbeat message, the provider is: {}, the heartbeat message is: {}", channel.remoteAddress(), protocol.getBody().getResult());
     }
 
     /**
