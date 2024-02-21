@@ -1,0 +1,1 @@
+enhanced_leastconnections=com.serendipity.rpc.loadbalancer.least.connections.LeastConnectionsServiceLoadBalancer

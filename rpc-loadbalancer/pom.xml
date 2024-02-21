@@ -22,6 +22,7 @@
         <module>rpc-loadbalancer-sourceip-hash-weight-enhanced</module>
         <module>rpc-loadbalancer-hash-weight-enhanced</module>
         <module>rpc-loadbalancer-consistenthash-zk-enhanced</module>
+        <module>rpc-loadbalancer-least-connections</module>
     </modules>
     <modelVersion>4.0.0</modelVersion>
 
