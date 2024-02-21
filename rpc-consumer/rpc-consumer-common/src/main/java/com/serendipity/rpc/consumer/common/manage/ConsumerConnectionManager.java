@@ -51,12 +51,6 @@ public class ConsumerConnectionManager {
         rpcRequest.setParameters(new Object[]{RpcConstants.HEARTBEAT_PING});
         requestRpcProtocol.setHeader(header);
         requestRpcProtocol.setBody(rpcRequest);
-        // for (Channel channel : channelCache) {
-        //     if (channel.isOpen() && channel.isActive()) {
-        //         logger.info("send heartbeat message to service provider, the provider is: {}, the heartbeat message is: {}", channel.remoteAddress(), RpcConstants.HEARTBEAT_PING);
-        //         channel.writeAndFlush(requestRpcProtocol);
-        //     }
-        // }
         channelCache.forEach((channel) -> {
             if (channel.isOpen() && channel.isActive()) {
                 logger.info("send heartbeat message to service provider, the provider is: {}, the heartbeat message is: {}", channel.remoteAddress(), RpcConstants.HEARTBEAT_PING);

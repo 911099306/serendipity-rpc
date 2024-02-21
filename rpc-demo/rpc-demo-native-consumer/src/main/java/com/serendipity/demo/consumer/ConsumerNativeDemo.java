@@ -28,7 +28,7 @@ public class ConsumerNativeDemo {
     @Test
     public void testInterfaceRpc() throws InterruptedException {
         DemoService demoService = rpcClient.create(DemoService.class);
-        String result = demoService.hello("serendipity");
+        String result = demoService.hello("binghe");
         LOGGER.info("返回的结果数据===>>> " + result);
         //rpcClient.shutdown();
         while (true){

@@ -11,7 +11,7 @@ import org.junit.Test;
 public class ProviderNativeDemo {
     @Test
     public void startRpcSingleServer(){
-        RpcSingleServer singleServer = new RpcSingleServer("127.0.0.1:27880", "127.0.0.1:2181", "zookeeper", "random","com.serendipity.rpc.demo", "bytebuddy");
+        RpcSingleServer singleServer = new RpcSingleServer("127.0.0.1:27880", "127.0.0.1:2181", "zookeeper", "random","com.serendipity.rpc.demo", "bytebuddy",3000, 6000);
         singleServer.startNettyServer();
     }
 }
