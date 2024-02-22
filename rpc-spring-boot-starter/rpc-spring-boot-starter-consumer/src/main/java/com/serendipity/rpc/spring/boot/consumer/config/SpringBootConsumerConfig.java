@@ -74,6 +74,17 @@ public final class SpringBootConsumerConfig {
      */
     private int resultCacheExpire;
 
+    /**
+     * 是否开启直连服务
+     */
+    private boolean enableDirectServer;
+
+    /**
+     * 直连服务的地址
+     */
+    private String directServerUrl;
+
+
     public SpringBootConsumerConfig() {
     }
 
@@ -81,7 +92,8 @@ public final class SpringBootConsumerConfig {
     public SpringBootConsumerConfig(final String registryAddress, final String registryType, final String loadBalanceType,
                                     final String proxy, final String version, final String group, final String serializationType,
                                     final int timeout, final boolean async, final boolean oneway, final int heartbeatInterval,
-                                    final int scanNotActiveChannelInterval, final int retryInterval, final int retryTimes) {
+                                    final int scanNotActiveChannelInterval, final int retryInterval, final int retryTimes,
+                                    final boolean enableDirectServer, final String directServerUrl) {
         this.registryAddress = registryAddress;
         this.registryType = registryType;
         this.loadBalanceType = loadBalanceType;
@@ -98,6 +110,8 @@ public final class SpringBootConsumerConfig {
         this.scanNotActiveChannelInterval = scanNotActiveChannelInterval;
         this.retryInterval = retryInterval;
         this.retryTimes = retryTimes;
+        this.enableDirectServer = enableDirectServer;
+        this.directServerUrl = directServerUrl;
     }
 
     public String getRegistryAddress() {
@@ -226,5 +240,21 @@ public final class SpringBootConsumerConfig {
 
     public void setResultCacheExpire(int resultCacheExpire) {
         this.resultCacheExpire = resultCacheExpire;
+    }
+
+    public boolean getEnableDirectServer() {
+        return enableDirectServer;
+    }
+
+    public void setEnableDirectServer(boolean enableDirectServer) {
+        this.enableDirectServer = enableDirectServer;
+    }
+
+    public String getDirectServerUrl() {
+        return directServerUrl;
+    }
+
+    public void setDirectServerUrl(String directServerUrl) {
+        this.directServerUrl = directServerUrl;
     }
 }

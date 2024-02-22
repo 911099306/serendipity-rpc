@@ -5,6 +5,7 @@ import com.serendipity.rpc.registry.api.config.RegistryConfig;
 import com.serendipity.rpc.spi.annotation.SPI;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * 注册配置类
@@ -39,6 +40,13 @@ public interface RegistryService {
      */
     ServiceMeta discovery(String serviceName, int invokerHashCode, String sourceIp) throws Exception;
 
+
+    /**
+     * 从多个元数据列表中根据一定的规则获取一个元数据
+     * @param serviceMetaList 元数据列表
+     * @return 某个特定的元数据
+     */
+    ServiceMeta select(List<ServiceMeta> serviceMetaList, int invokerHashCode, String sourceIp);
 
     /**
      * 服务销毁

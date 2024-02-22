@@ -1,3 +1,18 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 package com.serendipity.rpc.consumer.spring;
 
 import com.serendipity.rpc.annotation.RpcReference;
@@ -31,7 +46,6 @@ import java.util.Map;
  **/
 @Component
 public class RpcConsumerPostProcessor implements ApplicationContextAware, BeanClassLoaderAware, BeanFactoryPostProcessor {
-
     private final Logger logger = LoggerFactory.getLogger(RpcConsumerPostProcessor.class);
     private ApplicationContext context;
     private ClassLoader classLoader;
@@ -91,6 +105,8 @@ public class RpcConsumerPostProcessor implements ApplicationContextAware, BeanCl
             builder.addPropertyValue("retryTimes", annotation.retryTimes());
             builder.addPropertyValue("enableResultCache", annotation.enableResultCache());
             builder.addPropertyValue("resultCacheExpire", annotation.resultCacheExpire());
+            builder.addPropertyValue("enableDirectServer", annotation.enableDirectServer());
+            builder.addPropertyValue("directServerUrl", annotation.directServerUrl());
 
             BeanDefinition beanDefinition = builder.getBeanDefinition();
             rpcRefBeanDefinitions.put(field.getName(), beanDefinition);

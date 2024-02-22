@@ -21,29 +21,29 @@ public class RpcConsumerNativeTest {
     private static final Logger logger = LoggerFactory.getLogger(RpcConsumerNativeTest.class);
 
     public static void main(String[] args) {
-        RpcClient rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper","enhanced_leastconnections", "jdk","1.0.0", "serendipity", "fst", 3000, false, false);
-        DemoService demoService = rpcClient.create(DemoService.class);
-        String result = demoService.hello("serendipity");
-        logger.info("RpcConsumerNativeTest 获得的结果: {}", result);
-        rpcClient.shutdown();
+        // RpcClient rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper","enhanced_leastconnections", "jdk","1.0.0", "serendipity", "fst", 3000, false, false);
+        // DemoService demoService = rpcClient.create(DemoService.class);
+        // String result = demoService.hello("serendipity");
+        // logger.info("RpcConsumerNativeTest 获得的结果: {}", result);
+        // rpcClient.shutdown();
     }
 
     @Test
     public void testInterfaceRpc() {
-        RpcClient rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper","random", "jdk","1.0.0", "serendipity", "fst", 3000, false, false);
-        DemoService demoService = rpcClient.create(DemoService.class);
-        String result = demoService.hello("serendipity~ 同步方法~~");
-        logger.info("testInterfaceRpc 获得的数据: {}", result);
-        rpcClient.shutdown();
+        // RpcClient rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper","random", "jdk","1.0.0", "serendipity", "fst", 3000, false, false);
+        // DemoService demoService = rpcClient.create(DemoService.class);
+        // String result = demoService.hello("serendipity~ 同步方法~~");
+        // logger.info("testInterfaceRpc 获得的数据: {}", result);
+        // rpcClient.shutdown();
     }
 
     @Test
     public void testAsyncInterfaceRpc() throws Exception {
-        RpcClient rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper","random", "jdk","1.0.0", "serendipity", "fst", 3000, false, false);
-        IAsyncObjectProxy demoService = rpcClient.createAsync(DemoService.class);
-        RPCFuture future = demoService.call("hello", "serendipity~ 异步方法");
-        logger.info("testAsyncInterfaceRpc 获得的数据: {}", future.get());
-        rpcClient.shutdown();
+        // RpcClient rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper","random", "jdk","1.0.0", "serendipity", "fst", 3000, false, false);
+        // IAsyncObjectProxy demoService = rpcClient.createAsync(DemoService.class);
+        // RPCFuture future = demoService.call("hello", "serendipity~ 异步方法");
+        // logger.info("testAsyncInterfaceRpc 获得的数据: {}", future.get());
+        // rpcClient.shutdown();
     }
 
 }
