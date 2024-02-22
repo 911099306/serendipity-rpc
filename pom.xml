@@ -25,6 +25,7 @@
         <module>rpc-reflect</module>
         <module>rpc-demo</module>
         <module>rpc-spring-boot-starter</module>
+        <module>rpc-cache</module>
     </modules>
 
 

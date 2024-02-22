@@ -1,5 +1,8 @@
 package com.serendipity.rpc.proxy.api.object;
 
+import com.serendipity.rpc.cache.result.CacheResultKey;
+import com.serendipity.rpc.cache.result.CacheResultManager;
+import com.serendipity.rpc.constants.RpcConstants;
 import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.enumeration.RpcType;
 import com.serendipity.rpc.protocol.header.RpcHeader;
@@ -72,20 +75,36 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
      */
     private boolean oneway;
 
+    /**
+     * 是否开启结果缓存
+     */
+    private boolean enableResultCache;
+
+    /**
+     * 结果缓存管理器
+     */
+    private CacheResultManager<Object> cacheResultManager;
+
     public ObjectProxy(Class<T> clazz) {
         this.clazz = clazz;
     }
 
-    public ObjectProxy(Class<T> clazz, String serviceVersion, String serviceGroup, String serializationType, long timeout, RegistryService registryService, Consumer consumer, boolean async, boolean oneway) {
+    public ObjectProxy(Class<T> clazz, String serviceVersion, String serviceGroup, String serializationType, long timeout, RegistryService registryService, Consumer consumer, boolean async, boolean oneway, boolean enableResultCache, int resultCacheExpire) {
         this.clazz = clazz;
         this.serviceVersion = serviceVersion;
         this.timeout = timeout;
-        this.registryService = registryService;
         this.serviceGroup = serviceGroup;
         this.consumer = consumer;
         this.serializationType = serializationType;
         this.async = async;
         this.oneway = oneway;
+        this.registryService = registryService;
+        this.enableResultCache = enableResultCache;
+        if (resultCacheExpire <= 0){
+            resultCacheExpire = RpcConstants.RPC_SCAN_RESULT_CACHE_EXPIRE;
+        }
+        this.cacheResultManager = CacheResultManager.getInstance(resultCacheExpire, enableResultCache);
+
     }
 
     @Override
@@ -105,7 +124,41 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
                 throw new IllegalStateException(String.valueOf(method));
             }
         }
-        RpcProtocol<RpcRequest> requestRpcProtocol = new RpcProtocol<>();
+        //开启缓存，直接调用方法请求服务提供者
+        if (enableResultCache) return invokeSendRequestMethodCache(method, args);
+        return invokeSendRequestMethod(method, args);
+    }
+
+    /**
+     * 从缓存中获取结果，若缓存中没有，再调用远程方法，并将结果加入缓存
+     * @param method 方法
+     * @param args 参数
+     * @return 响应结果
+     * @throws Exception 异常
+     */
+    private Object invokeSendRequestMethodCache(Method method, Object[] args) throws Exception {
+        //开启缓存，则处理缓存
+        CacheResultKey cacheResultKey = new CacheResultKey(method.getDeclaringClass().getName(), method.getName(), method.getParameterTypes(), args, serviceVersion, serviceGroup);
+        Object obj = this.cacheResultManager.get(cacheResultKey);
+        if (obj == null){
+            obj = invokeSendRequestMethod(method, args);
+            if (obj != null){
+                cacheResultKey.setCacheTimeStamp(System.currentTimeMillis());
+                this.cacheResultManager.put(cacheResultKey, obj);
+            }
+        }
+        return obj;
+    }
+
+    /**
+     * 真正发送请求调用远程方法
+     * @param method 方法
+     * @param args 参数
+     * @return 响应结果
+     * @throws Exception 异常
+     */
+    private Object invokeSendRequestMethod(Method method, Object[] args) throws Exception {
+        RpcProtocol<RpcRequest> requestRpcProtocol = new RpcProtocol<RpcRequest>();
 
         requestRpcProtocol.setHeader(RpcHeaderFactory.getRequestHeader(serializationType, RpcType.REQUEST.getType()));
 
@@ -124,13 +177,13 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
         logger.debug(method.getDeclaringClass().getName());
         logger.debug(method.getName());
 
-        if (method.getParameterTypes() != null && method.getParameterTypes().length > 0) {
+        if (method.getParameterTypes() != null && method.getParameterTypes().length > 0){
             for (int i = 0; i < method.getParameterTypes().length; ++i) {
                 logger.debug(method.getParameterTypes()[i].getName());
             }
         }
 
-        if (args != null && args.length > 0) {
+        if (args != null && args.length > 0){
             for (int i = 0; i < args.length; ++i) {
                 logger.debug(args[i].toString());
             }
@@ -139,6 +192,7 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
         RPCFuture rpcFuture = this.consumer.sendRequest(requestRpcProtocol, registryService);
         return rpcFuture == null ? null : timeout > 0 ? rpcFuture.get(timeout, TimeUnit.MILLISECONDS) : rpcFuture.get();
     }
+
 
     /**
      * 异步调用方法

@@ -75,11 +75,23 @@ public class RpcReferenceBean implements FactoryBean<Object> {
      */
     private int heartbeatInterval;
 
-    //重试间隔时间
+    // 重试间隔时间
     private int retryInterval = 1000;
 
-    //重试次数
+    // 重试次数
     private int retryTimes = 3;
+
+    private RpcClient rpcClient;
+
+    /**
+     * 是否开启结果缓存
+     */
+    private boolean enableResultCache;
+
+    /**
+     * 缓存结果的时长，单位是毫秒
+     */
+    private int resultCacheExpire;
 
     @Override
     public Object getObject() throws Exception {
@@ -92,8 +104,8 @@ public class RpcReferenceBean implements FactoryBean<Object> {
     }
 
     @SuppressWarnings("unchecked")
-    public void init() throws Exception{
-        RpcClient rpcClient = new RpcClient(registryAddress, registryType, loadBalanceType, proxy, version, group, serializationType, timeout, async, oneway, heartbeatInterval, scanNotActiveChannelInterval, retryInterval, retryTimes);
+    public void init() {
+        rpcClient = new RpcClient(registryAddress, registryType, loadBalanceType, proxy, version, group, serializationType, timeout, async, oneway, heartbeatInterval, scanNotActiveChannelInterval, retryInterval, retryTimes, enableResultCache, resultCacheExpire);
         this.object = rpcClient.create(interfaceClass);
     }
 
@@ -137,7 +149,7 @@ public class RpcReferenceBean implements FactoryBean<Object> {
         this.serializationType = serializationType;
     }
 
-    public void setOneway(boolean oneway){
+    public void setOneway(boolean oneway) {
         this.oneway = oneway;
     }
 
@@ -155,5 +167,81 @@ public class RpcReferenceBean implements FactoryBean<Object> {
 
     public void setScanNotActiveChannelInterval(int scanNotActiveChannelInterval) {
         this.scanNotActiveChannelInterval = scanNotActiveChannelInterval;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public String getRegistryType() {
+        return registryType;
+    }
+
+    public String getLoadBalanceType() {
+        return loadBalanceType;
+    }
+
+    public String getSerializationType() {
+        return serializationType;
+    }
+
+    public String getRegistryAddress() {
+        return registryAddress;
+    }
+
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public boolean isAsync() {
+        return async;
+    }
+
+    public boolean isOneway() {
+        return oneway;
+    }
+
+    public String getProxy() {
+        return proxy;
+    }
+
+    public int getScanNotActiveChannelInterval() {
+        return scanNotActiveChannelInterval;
+    }
+
+    public int getHeartbeatInterval() {
+        return heartbeatInterval;
+    }
+
+    public int getRetryInterval() {
+        return retryInterval;
+    }
+
+    public int getRetryTimes() {
+        return retryTimes;
+    }
+
+    public RpcClient getRpcClient() {
+        return rpcClient;
+    }
+
+    public boolean isEnableResultCache() {
+        return enableResultCache;
+    }
+
+    public void setEnableResultCache(boolean enableResultCache) {
+        this.enableResultCache = enableResultCache;
+    }
+
+    public int getResultCacheExpire() {
+        return resultCacheExpire;
+    }
+
+    public void setResultCacheExpire(int resultCacheExpire) {
+        this.resultCacheExpire = resultCacheExpire;
     }
 }

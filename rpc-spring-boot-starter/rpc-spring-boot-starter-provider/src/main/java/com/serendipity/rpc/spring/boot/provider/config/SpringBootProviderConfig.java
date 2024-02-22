@@ -18,6 +18,10 @@ public class SpringBootProviderConfig {
      */
     private String registryAddress;
     /**
+     * 注册到注册中心的服务地址
+     */
+    private String serverRegistryAddress;
+    /**
      * 注册类型
      */
     private String registryType;
@@ -40,10 +44,20 @@ public class SpringBootProviderConfig {
      */
     private int scanNotActiveChannelInterval;
 
+    /**
+     * 是否开启结果缓存
+     */
+    private boolean enableResultCache;
+
+    /**
+     * 结果缓存的时长
+     */
+    private int resultCacheExpire;
+
     public SpringBootProviderConfig() {
     }
 
-    public SpringBootProviderConfig(final String serverAddress, final String registryAddress, final String registryType, final String registryLoadBalanceType, final String reflectType, final int heartbeatInterval, int scanNotActiveChannelInterval) {
+    public SpringBootProviderConfig(final String serverAddress, final String serverRegistryAddress, final String registryAddress, final String registryType, final String registryLoadBalanceType, final String reflectType, final int heartbeatInterval, int scanNotActiveChannelInterval, final boolean enableResultCache, final int resultCacheExpire) {
         this.serverAddress = serverAddress;
         this.registryAddress = registryAddress;
         this.registryType = registryType;
@@ -53,6 +67,9 @@ public class SpringBootProviderConfig {
             this.heartbeatInterval = heartbeatInterval;
         }
         this.scanNotActiveChannelInterval = scanNotActiveChannelInterval;
+        this.serverRegistryAddress = serverRegistryAddress;
+        this.enableResultCache = enableResultCache;
+        this.resultCacheExpire = resultCacheExpire;
     }
 
     public String getServerAddress() {
@@ -93,6 +110,30 @@ public class SpringBootProviderConfig {
 
     public void setReflectType(String reflectType) {
         this.reflectType = reflectType;
+    }
+
+    public String getServerRegistryAddress() {
+        return serverRegistryAddress;
+    }
+
+    public void setServerRegistryAddress(String serverRegistryAddress) {
+        this.serverRegistryAddress = serverRegistryAddress;
+    }
+
+    public boolean getEnableResultCache() {
+        return enableResultCache;
+    }
+
+    public void setEnableResultCache(boolean enableResultCache) {
+        this.enableResultCache = enableResultCache;
+    }
+
+    public int getResultCacheExpire() {
+        return resultCacheExpire;
+    }
+
+    public void setResultCacheExpire(int resultCacheExpire) {
+        this.resultCacheExpire = resultCacheExpire;
     }
 
     public int getHeartbeatInterval() {

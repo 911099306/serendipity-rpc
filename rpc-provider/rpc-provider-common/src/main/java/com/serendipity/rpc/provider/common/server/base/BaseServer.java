@@ -50,6 +50,9 @@ public class BaseServer implements Server {
      */
     protected int port = 27110;
 
+    protected String serverRegistryHost;
+    protected int serverRegistryPort;
+
     /**
      * 实体类映射关系
      */
@@ -80,20 +83,42 @@ public class BaseServer implements Server {
      */
     private int scanNotActiveChannelInterval = 60000;
 
-    public BaseServer(String serverAddress, String registryAddress, String registryType, String registryLoadBalanceType, String reflectType, int heartbeatInterval, int scanNotActiveChannelInterval) {
+    /**
+     * 结果缓存过期时长，默认5秒
+     */
+    private int resultCacheExpire = 5000;
+    /**
+     * 是否开启结果缓存
+     */
+    private boolean enableResultCache;
+
+    public BaseServer(String serverAddress, String serverRegistryAddress, String registryAddress, String registryType, String registryLoadBalanceType, String reflectType, int heartbeatInterval, int scanNotActiveChannelInterval, boolean enableResultCache, int resultCacheExpire) {
         if (!StringUtils.isEmpty(serverAddress)) {
             String[] serverArray = serverAddress.split(":");
             this.host = serverArray[0];
             this.port = Integer.parseInt(serverArray[1]);
         }
-        if (heartbeatInterval > 0){
+        if (!StringUtils.isEmpty(serverRegistryAddress)) {
+            String[] serverRegistryAddressArray = serverRegistryAddress.split(":");
+            this.serverRegistryHost = serverRegistryAddressArray[0];
+            this.serverRegistryPort = Integer.parseInt(serverRegistryAddressArray[1]);
+        } else {
+            this.serverRegistryHost = this.host;
+            this.serverRegistryPort = this.port;
+        }
+        if (heartbeatInterval > 0) {
             this.heartbeatInterval = heartbeatInterval;
         }
-        if (scanNotActiveChannelInterval > 0){
+        if (scanNotActiveChannelInterval > 0) {
             this.scanNotActiveChannelInterval = scanNotActiveChannelInterval;
         }
         this.reflectType = reflectType;
         this.registryService = this.getRegistryService(registryAddress, registryType, registryLoadBalanceType);
+
+        if (resultCacheExpire > 0) {
+            this.resultCacheExpire = resultCacheExpire;
+        }
+        this.enableResultCache = enableResultCache;
     }
 
     /**
@@ -129,7 +154,7 @@ public class BaseServer implements Server {
                                     .addLast(RpcConstants.CODEC_ENCODER, new RpcEncoder())
                                     // 读空闲时间、写空闲时间，读/写空闲时间 每这写时间间隔触发方法，检测是否发生过读/写时间，若没有，则触发超时事件：userEventTriggered（handler）进行关闭连接
                                     .addLast(RpcConstants.CODEC_SERVER_IDLE_HANDLER, new IdleStateHandler(0, 0, heartbeatInterval, TimeUnit.MILLISECONDS))
-                                    .addLast(RpcConstants.CODEC_HANDLER, new RpcProviderHandler(reflectType, handlerMap));
+                                    .addLast(RpcConstants.CODEC_HANDLER, new RpcProviderHandler(reflectType, enableResultCache, resultCacheExpire, handlerMap));
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)

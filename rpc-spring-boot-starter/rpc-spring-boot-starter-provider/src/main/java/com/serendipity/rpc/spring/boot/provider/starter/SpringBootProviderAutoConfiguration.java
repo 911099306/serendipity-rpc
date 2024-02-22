@@ -24,12 +24,16 @@ public class SpringBootProviderAutoConfiguration {
 
     @Bean
     public RpcSpringServer rpcSpringServer(final SpringBootProviderConfig springBootProviderConfig){
-        return new RpcSpringServer(springBootProviderConfig.getServerAddress(),
+        return new RpcSpringServer(
+                springBootProviderConfig.getServerAddress(),
+                springBootProviderConfig.getServerRegistryAddress(),
                 springBootProviderConfig.getRegistryAddress(),
                 springBootProviderConfig.getRegistryType(),
                 springBootProviderConfig.getRegistryLoadBalanceType(),
                 springBootProviderConfig.getReflectType(),
                 springBootProviderConfig.getHeartbeatInterval(),
-                springBootProviderConfig.getScanNotActiveChannelInterval());
+                springBootProviderConfig.getScanNotActiveChannelInterval(),
+                springBootProviderConfig.getEnableResultCache(),
+                springBootProviderConfig.getResultCacheExpire());
     }
 }
