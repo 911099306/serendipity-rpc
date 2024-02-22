@@ -12,6 +12,8 @@
         <module>rpc-demo-native-provider</module>
         <module>rpc-demo-spring-xml-provider</module>
         <module>rpc-demo-spring-annotation-provider</module>
+        <module>rpc-demo-spring-xml-consumer</module>
+        <module>rpc-demo-spring-annotation-consumer</module>
     </modules>
     <modelVersion>4.0.0</modelVersion>
 

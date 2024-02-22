@@ -19,14 +19,11 @@ public @interface RpcReference {
 
     /**
      * 版本号
-     * @return
      */
     String version() default "1.0.0";
 
-
     /**
-     * 注册中心： zookeeper、 consul、 etcd、 nacos
-     * @return
+     * 注册中心类型, 目前的类型包含：zookeeper、nacos、etcd、consul
      */
     String registryType() default "zookeeper";
 
@@ -36,18 +33,17 @@ public @interface RpcReference {
     String registryAddress() default "127.0.0.1:2181";
 
     /**
-     * 负载均衡类型：默认基于 zk 的一致性 hash
+     * 负载均衡类型，默认基于ZK的一致性Hash
      */
     String loadBalanceType() default "zkconsistenthash";
 
-
     /**
-     * 序列话类型：jdk、hessian2、protostuff、json、fst、kryo
+     * 序列化类型，目前的类型包含：protostuff、kryo、json、jdk、hessian2、fst
      */
     String serializationType() default "protostuff";
 
     /**
-     * 超时时间，默认 5s
+     * 超时时间，默认5s
      */
     long timeout() default 5000;
 
@@ -57,21 +53,39 @@ public @interface RpcReference {
     boolean async() default false;
 
     /**
-     * 是否单项调用
+     * 是否单向调用
      */
     boolean oneway() default false;
 
     /**
-     * 代理类型：jdk、Cglib、javassist
-     * @return
+     * 代理的类型，jdk：jdk代理， javassist: javassist代理, cglib: cglib代理
      */
     String proxy() default "jdk";
 
     /**
      * 服务分组，默认为空
-     * @return
      */
     String group() default "";
+
+    /**
+     * 心跳间隔时间，默认30秒
+     */
+    int heartbeatInterval() default 30000;
+
+    /**
+     * 扫描空闲连接间隔时间，默认60秒
+     */
+    int scanNotActiveChannelInterval() default 60000;
+
+    /**
+     * 重试间隔时间
+     */
+    int retryInterval() default 1000;
+
+    /**
+     * 重试间隔时间
+     */
+    int retryTimes() default 3;
 }
 
 
