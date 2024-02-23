@@ -9,6 +9,7 @@ import com.serendipity.rpc.consumer.common.handler.RpcConsumerHandler;
 import com.serendipity.rpc.consumer.common.helper.RpcConsumerHandlerHelper;
 import com.serendipity.rpc.consumer.common.initializer.RpcConsumerInitializer;
 import com.serendipity.rpc.consumer.common.manage.ConsumerConnectionManager;
+import com.serendipity.rpc.flow.processor.FlowPostProcessor;
 import com.serendipity.rpc.loadbalancer.context.ConnectionsContext;
 import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.meta.ServiceMeta;
@@ -16,6 +17,7 @@ import com.serendipity.rpc.protocol.request.RpcRequest;
 import com.serendipity.rpc.proxy.api.consumer.Consumer;
 import com.serendipity.rpc.proxy.api.future.RPCFuture;
 import com.serendipity.rpc.registry.api.RegistryService;
+import com.serendipity.rpc.spi.loader.ExtensionLoader;
 import com.serendipity.rpc.threadpool.ConcurrentThreadPool;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -102,6 +104,10 @@ public class RpcConsumer implements Consumer {
      */
     private ConcurrentThreadPool concurrentThreadPool;
 
+    /**
+     * 流控分析后置处理器
+     */
+    private FlowPostProcessor flowPostProcessor;
 
 
     private RpcConsumer() {
@@ -154,9 +160,17 @@ public class RpcConsumer implements Consumer {
         return this;
     }
 
+    public RpcConsumer setFlowPostProcessor(String flowType){
+        if (StringUtils.isEmpty(flowType)){
+            flowType = RpcConstants.FLOW_POST_PROCESSOR_PRINT;
+        }
+        this.flowPostProcessor = ExtensionLoader.getExtension(FlowPostProcessor.class, flowType);
+        return this;
+    }
+
     public RpcConsumer buildNettyGroup(){
         bootstrap.group(eventLoopGroup).channel(NioSocketChannel.class)
-                .handler(new RpcConsumerInitializer(heartbeatInterval, concurrentThreadPool));
+                .handler(new RpcConsumerInitializer(heartbeatInterval, concurrentThreadPool,flowPostProcessor));
         return this;
     }
 

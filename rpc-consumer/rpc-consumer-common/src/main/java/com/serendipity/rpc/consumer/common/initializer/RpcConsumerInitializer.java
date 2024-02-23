@@ -4,6 +4,7 @@ import com.serendipity.rpc.codec.RpcDecoder;
 import com.serendipity.rpc.codec.RpcEncoder;
 import com.serendipity.rpc.constants.RpcConstants;
 import com.serendipity.rpc.consumer.common.handler.RpcConsumerHandler;
+import com.serendipity.rpc.flow.processor.FlowPostProcessor;
 import com.serendipity.rpc.threadpool.ConcurrentThreadPool;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -28,17 +29,23 @@ public class RpcConsumerInitializer extends ChannelInitializer<SocketChannel> {
      */
     private ConcurrentThreadPool concurrentThreadPool;
 
-    public RpcConsumerInitializer(int heartbeatInterval, ConcurrentThreadPool concurrentThreadPool){
+    /**
+     * 流量分析后置处理器
+     */
+    private FlowPostProcessor flowPostProcessor;
+
+    public RpcConsumerInitializer(int heartbeatInterval, ConcurrentThreadPool concurrentThreadPool, FlowPostProcessor flowPostProcessor){
         if (heartbeatInterval > 0){
             this.heartbeatInterval = heartbeatInterval;
         }
         this.concurrentThreadPool = concurrentThreadPool;
+        this.flowPostProcessor = flowPostProcessor;
     }
     @Override
     protected void initChannel(SocketChannel channel) throws Exception {
         ChannelPipeline cp = channel.pipeline();
-        cp.addLast(RpcConstants.CODEC_ENCODER, new RpcEncoder());
-        cp.addLast(RpcConstants.CODEC_DECODER, new RpcDecoder());
+        cp.addLast(RpcConstants.CODEC_ENCODER, new RpcEncoder(flowPostProcessor));
+        cp.addLast(RpcConstants.CODEC_DECODER, new RpcDecoder(flowPostProcessor));
         cp.addLast(RpcConstants.CODEC_CLIENT_IDLE_HANDLER, new IdleStateHandler(heartbeatInterval, 0, 0, TimeUnit.MILLISECONDS));
         cp.addLast(RpcConstants.CODEC_HANDLER, new RpcConsumerHandler(concurrentThreadPool));
     }

@@ -1,6 +1,7 @@
 package com.serendipity.rpc.codec;
 
 import com.serendipity.rpc.common.utils.SerializationUtils;
+import com.serendipity.rpc.flow.processor.FlowPostProcessor;
 import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.header.RpcHeader;
 import com.serendipity.rpc.serialization.api.Serialization;
@@ -14,6 +15,13 @@ import io.netty.handler.codec.MessageToByteEncoder;
  * @date 2024/2/5
  **/
 public class RpcEncoder extends MessageToByteEncoder<RpcProtocol<Object>> implements RpcCodec{
+
+    private FlowPostProcessor postProcessor;
+
+    public RpcEncoder(FlowPostProcessor postProcessor){
+        this.postProcessor = postProcessor;
+    }
+
     @Override
     protected void encode(ChannelHandlerContext ctx, RpcProtocol<Object> msg, ByteBuf byteBuf) throws Exception {
         RpcHeader header = msg.getHeader();
@@ -28,6 +36,9 @@ public class RpcEncoder extends MessageToByteEncoder<RpcProtocol<Object>> implem
         byte[] data = serialization.serialize(msg.getBody());
         byteBuf.writeInt(data.length);
         byteBuf.writeBytes(data);
+        //异步调用流控分析后置处理器
+        header.setMsgLen(data.length);
+        this.postFlowProcessor(postProcessor, header);
     }
 
 }

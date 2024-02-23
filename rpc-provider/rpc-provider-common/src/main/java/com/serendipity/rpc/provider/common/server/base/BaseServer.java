@@ -3,6 +3,7 @@ package com.serendipity.rpc.provider.common.server.base;
 import com.serendipity.rpc.codec.RpcDecoder;
 import com.serendipity.rpc.codec.RpcEncoder;
 import com.serendipity.rpc.constants.RpcConstants;
+import com.serendipity.rpc.flow.processor.FlowPostProcessor;
 import com.serendipity.rpc.provider.common.handler.RpcProviderHandler;
 import com.serendipity.rpc.provider.common.manager.ProviderConnectionManager;
 import com.serendipity.rpc.provider.common.server.api.Server;
@@ -101,7 +102,12 @@ public class BaseServer implements Server {
      */
     private int maximumPoolSize;
 
-    public BaseServer(String serverAddress, String serverRegistryAddress, String registryAddress, String registryType, String registryLoadBalanceType, String reflectType, int heartbeatInterval, int scanNotActiveChannelInterval, boolean enableResultCache, int resultCacheExpire, int corePoolSize, int maximumPoolSize) {
+    /**
+     * 流控分析后置处理器
+     */
+    private FlowPostProcessor flowPostProcessor;
+
+    public BaseServer(String serverAddress, String serverRegistryAddress, String registryAddress, String registryType, String registryLoadBalanceType, String reflectType, int heartbeatInterval, int scanNotActiveChannelInterval, boolean enableResultCache, int resultCacheExpire, int corePoolSize, int maximumPoolSize, String flowType) {
         if (!StringUtils.isEmpty(serverAddress)) {
             String[] serverArray = serverAddress.split(":");
             this.host = serverArray[0];
@@ -130,6 +136,7 @@ public class BaseServer implements Server {
         this.enableResultCache = enableResultCache;
         this.corePoolSize = corePoolSize;
         this.maximumPoolSize = maximumPoolSize;
+        this.flowPostProcessor = ExtensionLoader.getExtension(FlowPostProcessor.class, flowType);
     }
 
     /**
@@ -161,8 +168,8 @@ public class BaseServer implements Server {
                         @Override
                         protected void initChannel(SocketChannel channel) throws Exception {
                             channel.pipeline()
-                                    .addLast(RpcConstants.CODEC_DECODER, new RpcDecoder())
-                                    .addLast(RpcConstants.CODEC_ENCODER, new RpcEncoder())
+                                    .addLast(RpcConstants.CODEC_DECODER, new RpcDecoder(flowPostProcessor))
+                                    .addLast(RpcConstants.CODEC_ENCODER, new RpcEncoder(flowPostProcessor))
                                     // 读空闲时间、写空闲时间，读/写空闲时间 每这写时间间隔触发方法，检测是否发生过读/写时间，若没有，则触发超时事件：userEventTriggered（handler）进行关闭连接
                                     .addLast(RpcConstants.CODEC_SERVER_IDLE_HANDLER, new IdleStateHandler(0, 0, heartbeatInterval, TimeUnit.MILLISECONDS))
                                     .addLast(RpcConstants.CODEC_HANDLER, new RpcProviderHandler(reflectType, enableResultCache, resultCacheExpire,corePoolSize, maximumPoolSize, handlerMap));

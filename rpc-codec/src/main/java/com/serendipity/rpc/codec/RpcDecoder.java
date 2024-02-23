@@ -2,6 +2,7 @@ package com.serendipity.rpc.codec;
 
 import com.serendipity.rpc.common.utils.SerializationUtils;
 import com.serendipity.rpc.constants.RpcConstants;
+import com.serendipity.rpc.flow.processor.FlowPostProcessor;
 import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.enumeration.RpcType;
 import com.serendipity.rpc.protocol.header.RpcHeader;
@@ -21,6 +22,12 @@ import java.util.List;
  * @date 2024/2/5
  **/
 public class RpcDecoder extends ByteToMessageDecoder implements RpcCodec{
+
+    private FlowPostProcessor postProcessor;
+    public RpcDecoder(FlowPostProcessor postProcessor){
+        this.postProcessor = postProcessor;
+    }
+
     @Override
     public final void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         if (in.readableBytes() < RpcConstants.HEADER_TOTAL_LEN) {
@@ -95,6 +102,8 @@ public class RpcDecoder extends ByteToMessageDecoder implements RpcCodec{
             default:
                 break;
         }
+        //异步调用流控分析后置处理器
+        this.postFlowProcessor(postProcessor, header);
     }
 
 }
