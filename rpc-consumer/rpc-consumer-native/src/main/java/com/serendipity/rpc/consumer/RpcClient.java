@@ -122,7 +122,7 @@ public class RpcClient {
                      String serviceVersion, String serviceGroup, String serializationType, long timeout, boolean async,
                      boolean oneway, int heartbeatInterval, int scanNotActiveChannelInterval, int retryInterval,
                      int retryTimes, boolean enableResultCache, int resultCacheExpire, boolean enableDirectServer,
-                     String directServerUrl,boolean enableDelayConnection,int corePoolSize, int maximumPoolSize,
+                     String directServerUrl, boolean enableDelayConnection, int corePoolSize, int maximumPoolSize,
                      String flowType) {
         this.serviceVersion = serviceVersion;
         this.proxy = proxy;
