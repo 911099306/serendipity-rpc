@@ -128,12 +128,27 @@ public class RpcClient {
      */
     private int bufferSize;
 
+    /**
+     * 反射类型
+     */
+    private String reflectType;
+
+    /**
+     * 容错类Class名称
+     */
+    private String fallbackClassName;
+
+    /**
+     * 容错类
+     */
+    private Class<?> fallbackClass;
+
     public RpcClient(String registryAddress, String registryType, String registryLoadBalanceType, String proxy,
                      String serviceVersion, String serviceGroup, String serializationType, long timeout, boolean async,
                      boolean oneway, int heartbeatInterval, int scanNotActiveChannelInterval, int retryInterval,
                      int retryTimes, boolean enableResultCache, int resultCacheExpire, boolean enableDirectServer,
                      String directServerUrl, boolean enableDelayConnection, int corePoolSize, int maximumPoolSize,
-                     String flowType,  boolean enableBuffer, int bufferSize) {
+                     String flowType, boolean enableBuffer, int bufferSize, String reflectType, String fallbackClassName) {
         this.serviceVersion = serviceVersion;
         this.proxy = proxy;
         this.timeout = timeout;
@@ -153,10 +168,14 @@ public class RpcClient {
         this.flowType = flowType;
         this.enableBuffer = enableBuffer;
         this.bufferSize = bufferSize;
+        this.reflectType = reflectType;
+        this.fallbackClassName = fallbackClassName;
         this.registryService = this.getRegistryService(registryAddress, registryType, registryLoadBalanceType);
         this.concurrentThreadPool = ConcurrentThreadPool.getInstance(corePoolSize, maximumPoolSize);
     }
-
+    public void setFallbackClass(Class<?> fallbackClass) {
+        this.fallbackClass = fallbackClass;
+    }
     /**
      * 根据 registryType 生成相应的注册服务
      *
@@ -180,7 +199,6 @@ public class RpcClient {
     }
 
     public <T> T create(Class<T> interfaceClass) {
-        // JdkProxyFactory<T> proxyFactory = new JdkProxyFactory<T>();
         ProxyFactory proxyFactory = ExtensionLoader.getExtension(ProxyFactory.class, proxy);
         proxyFactory.init(new ProxyConfig(interfaceClass, serviceVersion, serviceGroup, serializationType, timeout, registryService,
                 RpcConsumer.getInstance()
@@ -197,7 +215,7 @@ public class RpcClient {
                         .setBufferSize(bufferSize)
                         .buildNettyGroup()
                         .buildConnection(registryService),
-                async, oneway, enableResultCache, resultCacheExpire));
+                async, oneway, enableResultCache, resultCacheExpire, reflectType, fallbackClassName, fallbackClass));
         return proxyFactory.getProxy(interfaceClass);
     }
 
@@ -217,8 +235,9 @@ public class RpcClient {
                         .setBufferSize(bufferSize)
                         .buildNettyGroup()
                         .buildConnection(registryService),
-                async, oneway, enableResultCache, resultCacheExpire);
+                async, oneway, enableResultCache, resultCacheExpire, reflectType, fallbackClassName, fallbackClass);
     }
+
 
     public void shutdown() {
         RpcConsumer.getInstance().close();
