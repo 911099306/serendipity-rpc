@@ -85,6 +85,11 @@ public final class SpringBootConsumerConfig {
     private String directServerUrl;
 
     /**
+     * 是否开启延迟连接
+     */
+    private boolean enableDelayConnection;
+
+    /**
      * 并发线程池核心线程数
      */
     private int corePoolSize;
@@ -94,6 +99,20 @@ public final class SpringBootConsumerConfig {
      */
     private int maximumPoolSize;
 
+    /**
+     * 流控分析类型
+     */
+    private String flowType;
+
+    /**
+     * 是否开启缓冲区
+     */
+    private boolean enableBuffer;
+
+    /**
+     * 缓冲区大小
+     */
+    private int bufferSize;
 
     public SpringBootConsumerConfig() {
     }
@@ -103,8 +122,9 @@ public final class SpringBootConsumerConfig {
                                     final String proxy, final String version, final String group, final String serializationType,
                                     final int timeout, final boolean async, final boolean oneway, final int heartbeatInterval,
                                     final int scanNotActiveChannelInterval, final int retryInterval, final int retryTimes,
-                                    final boolean enableDirectServer, final String directServerUrl,
-                                    final int corePoolSize, final int maximumPoolSize) {
+                                    final boolean enableDirectServer, final String directServerUrl, final boolean enableDelayConnection,
+                                    final int corePoolSize, final int maximumPoolSize, String flowType, final boolean enableBuffer,
+                                    final int bufferSize) {
         this.registryAddress = registryAddress;
         this.registryType = registryType;
         this.loadBalanceType = loadBalanceType;
@@ -123,8 +143,12 @@ public final class SpringBootConsumerConfig {
         this.retryTimes = retryTimes;
         this.enableDirectServer = enableDirectServer;
         this.directServerUrl = directServerUrl;
+        this.enableDelayConnection = enableDelayConnection;
         this.corePoolSize = corePoolSize;
         this.maximumPoolSize = maximumPoolSize;
+        this.flowType = flowType;
+        this.enableBuffer = enableBuffer;
+        this.bufferSize = bufferSize;
     }
 
     public String getRegistryAddress() {
@@ -270,6 +294,15 @@ public final class SpringBootConsumerConfig {
     public void setDirectServerUrl(String directServerUrl) {
         this.directServerUrl = directServerUrl;
     }
+
+    public boolean getEnableDelayConnection() {
+        return enableDelayConnection;
+    }
+
+    public void setEnableDelayConnection(boolean enableDelayConnection) {
+        this.enableDelayConnection = enableDelayConnection;
+    }
+
     public int getCorePoolSize() {
         return corePoolSize;
     }
@@ -285,5 +318,27 @@ public final class SpringBootConsumerConfig {
     public void setMaximumPoolSize(int maximumPoolSize) {
         this.maximumPoolSize = maximumPoolSize;
     }
+    public String getFlowType() {
+        return flowType;
+    }
 
+    public void setFlowType(String flowType) {
+        this.flowType = flowType;
+    }
+
+    public boolean getEnableBuffer() {
+        return enableBuffer;
+    }
+
+    public void setEnableBuffer(boolean enableBuffer) {
+        this.enableBuffer = enableBuffer;
+    }
+
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    public void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
 }

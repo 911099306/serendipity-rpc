@@ -116,6 +116,35 @@ public class SpringBootConsumerAutoConfiguration {
             referenceBean.setDirectServerUrl(springBootConsumerConfig.getDirectServerUrl());
 
         }
+
+        if (!referenceBean.isEnableDelayConnection()){
+            referenceBean.setEnableDelayConnection(springBootConsumerConfig.getEnableDelayConnection());
+        }
+
+        if (referenceBean.getCorePoolSize() <= 0
+                || (RpcConstants.DEFAULT_CORE_POOL_SIZE == referenceBean.getCorePoolSize() && springBootConsumerConfig.getCorePoolSize() > 0)){
+            referenceBean.setCorePoolSize(springBootConsumerConfig.getCorePoolSize());
+        }
+
+        if (referenceBean.getMaximumPoolSize() <= 0
+                || (RpcConstants.DEFAULT_MAXI_NUM_POOL_SIZE == referenceBean.getMaximumPoolSize() && springBootConsumerConfig.getMaximumPoolSize() > 0)){
+            referenceBean.setMaximumPoolSize(springBootConsumerConfig.getMaximumPoolSize());
+        }
+
+        if (StringUtils.isEmpty(referenceBean.getFlowType())
+                || (RpcConstants.FLOW_POST_PROCESSOR_PRINT.equals(referenceBean.getFlowType()) && !StringUtils.isEmpty(springBootConsumerConfig.getFlowType()))){
+            referenceBean.setFlowType(springBootConsumerConfig.getFlowType());
+        }
+
+        if (!referenceBean.isEnableBuffer()){
+            referenceBean.setEnableBuffer(springBootConsumerConfig.getEnableBuffer());
+        }
+
+        if (referenceBean.getBufferSize() <= 0
+                || (RpcConstants.DEFAULT_BUFFER_SIZE == referenceBean.getBufferSize() && springBootConsumerConfig.getBufferSize() > 0)){
+            referenceBean.setBufferSize(springBootConsumerConfig.getBufferSize());
+        }
+
         return referenceBean;
     }
 

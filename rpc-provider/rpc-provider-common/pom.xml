@@ -37,6 +37,11 @@
             <artifactId>rpc-connection</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-buffer</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
 
         <!-- SPI扩展反射机制 -->
