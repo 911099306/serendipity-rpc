@@ -54,22 +54,34 @@ public class SpringBootProviderConfig {
      */
     private int resultCacheExpire;
 
+    /**
+     * 核心线程数
+     */
+    private int corePoolSize;
+
+    /**
+     * 最大线程数
+     */
+    private int maximumPoolSize;
+
     public SpringBootProviderConfig() {
     }
 
-    public SpringBootProviderConfig(final String serverAddress, final String serverRegistryAddress, final String registryAddress, final String registryType, final String registryLoadBalanceType, final String reflectType, final int heartbeatInterval, int scanNotActiveChannelInterval, final boolean enableResultCache, final int resultCacheExpire) {
+    public SpringBootProviderConfig(final String serverAddress, final String serverRegistryAddress, final String registryAddress, final String registryType, final String registryLoadBalanceType, final String reflectType, final int heartbeatInterval, int scanNotActiveChannelInterval, final boolean enableResultCache, final int resultCacheExpire, final int corePoolSize, final int maximumPoolSize) {
         this.serverAddress = serverAddress;
         this.registryAddress = registryAddress;
         this.registryType = registryType;
         this.registryLoadBalanceType = registryLoadBalanceType;
         this.reflectType = reflectType;
-        if (heartbeatInterval > 0){
+        if (heartbeatInterval > 0) {
             this.heartbeatInterval = heartbeatInterval;
         }
         this.scanNotActiveChannelInterval = scanNotActiveChannelInterval;
         this.serverRegistryAddress = serverRegistryAddress;
         this.enableResultCache = enableResultCache;
         this.resultCacheExpire = resultCacheExpire;
+        this.corePoolSize = corePoolSize;
+        this.maximumPoolSize = maximumPoolSize;
     }
 
     public String getServerAddress() {
@@ -150,5 +162,21 @@ public class SpringBootProviderConfig {
 
     public void setScanNotActiveChannelInterval(int scanNotActiveChannelInterval) {
         this.scanNotActiveChannelInterval = scanNotActiveChannelInterval;
+    }
+
+    public int getCorePoolSize() {
+        return corePoolSize;
+    }
+
+    public void setCorePoolSize(int corePoolSize) {
+        this.corePoolSize = corePoolSize;
+    }
+
+    public int getMaximumPoolSize() {
+        return maximumPoolSize;
+    }
+
+    public void setMaximumPoolSize(int maximumPoolSize) {
+        this.maximumPoolSize = maximumPoolSize;
     }
 }

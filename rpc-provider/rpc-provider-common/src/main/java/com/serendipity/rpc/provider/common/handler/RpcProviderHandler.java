@@ -16,6 +16,7 @@ import com.serendipity.rpc.protocol.response.RpcResponse;
 import com.serendipity.rpc.provider.common.cache.ProviderChannelCache;
 import com.serendipity.rpc.reflect.api.ReflectInvoker;
 import com.serendipity.rpc.spi.loader.ExtensionLoader;
+import com.serendipity.rpc.threadpool.ConcurrentThreadPool;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -58,7 +59,12 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
      */
     private final CacheResultManager<RpcProtocol<RpcResponse>> cacheResultManager;
 
-    public RpcProviderHandler(String reflectType, boolean enableResultCache, int resultCacheExpire, Map<String, Object> handlerMap) {
+    /**
+     * 线程池
+     */
+    private final ConcurrentThreadPool concurrentThreadPool;
+
+    public RpcProviderHandler(String reflectType, boolean enableResultCache, int resultCacheExpire,int corePoolSize, int maximumPoolSize, Map<String, Object> handlerMap) {
         this.handlerMap = handlerMap;
         this.reflectInvoker = ExtensionLoader.getExtension(ReflectInvoker.class, reflectType);
         this.enableResultCache = enableResultCache;
@@ -66,6 +72,7 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
             resultCacheExpire = RpcConstants.RPC_SCAN_RESULT_CACHE_EXPIRE;
         }
         this.cacheResultManager = CacheResultManager.getInstance(resultCacheExpire, enableResultCache);
+        this.concurrentThreadPool = ConcurrentThreadPool.getInstance(corePoolSize, maximumPoolSize);
     }
 
     @Override
@@ -87,7 +94,7 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcProtocol<RpcRequest> protocol) throws Exception {
-        ServerThreadPool.submit(() -> {
+        concurrentThreadPool.submit(() -> {
             RpcProtocol<RpcResponse> responseRpcProtocol = handlerMessage(protocol, ctx.channel());
             ctx.writeAndFlush(responseRpcProtocol).addListener(new ChannelFutureListener() {
                 @Override

@@ -28,5 +28,10 @@
             <artifactId>rpc-cache</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-threadpool</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

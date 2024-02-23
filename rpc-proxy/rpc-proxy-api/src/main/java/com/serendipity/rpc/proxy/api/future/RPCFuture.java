@@ -6,6 +6,7 @@ import com.serendipity.rpc.protocol.RpcProtocol;
 import com.serendipity.rpc.protocol.request.RpcRequest;
 import com.serendipity.rpc.protocol.response.RpcResponse;
 import com.serendipity.rpc.proxy.api.callback.AsyncRPCCallback;
+import com.serendipity.rpc.threadpool.ConcurrentThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,10 +64,16 @@ public class RPCFuture extends CompletableFuture<Object> {
      */
     private ReentrantLock lock = new ReentrantLock();
 
-    public RPCFuture(RpcProtocol<RpcRequest> requestRpcProtocol) {
+    /**
+     * 线程池
+     */
+    private ConcurrentThreadPool concurrentThreadPool;
+
+    public RPCFuture(RpcProtocol<RpcRequest> requestRpcProtocol, ConcurrentThreadPool concurrentThreadPool) {
         this.sync = new Sync();
         this.requestRpcProtocol = requestRpcProtocol;
         this.startTime = System.currentTimeMillis();
+        this.concurrentThreadPool = concurrentThreadPool;
     }
 
     @Override
@@ -166,7 +173,7 @@ public class RPCFuture extends CompletableFuture<Object> {
      */
     private void runCallback(final AsyncRPCCallback callback) {
         final RpcResponse res = this.responseRpcProtocol.getBody();
-        ClientThreadPool.submit(() -> {
+        concurrentThreadPool.submit(() -> {
             if (!res.isError()) {
                 callback.onSuccess(res.getResult());
             } else {

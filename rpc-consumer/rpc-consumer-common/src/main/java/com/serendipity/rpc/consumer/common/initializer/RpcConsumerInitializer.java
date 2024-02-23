@@ -4,6 +4,7 @@ import com.serendipity.rpc.codec.RpcDecoder;
 import com.serendipity.rpc.codec.RpcEncoder;
 import com.serendipity.rpc.constants.RpcConstants;
 import com.serendipity.rpc.consumer.common.handler.RpcConsumerHandler;
+import com.serendipity.rpc.threadpool.ConcurrentThreadPool;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -22,11 +23,16 @@ public class RpcConsumerInitializer extends ChannelInitializer<SocketChannel> {
      * 心跳间隔时间
      */
     private int heartbeatInterval;
+    /**
+     * 线程池
+     */
+    private ConcurrentThreadPool concurrentThreadPool;
 
-    public RpcConsumerInitializer(int heartbeatInterval){
+    public RpcConsumerInitializer(int heartbeatInterval, ConcurrentThreadPool concurrentThreadPool){
         if (heartbeatInterval > 0){
             this.heartbeatInterval = heartbeatInterval;
         }
+        this.concurrentThreadPool = concurrentThreadPool;
     }
     @Override
     protected void initChannel(SocketChannel channel) throws Exception {
@@ -34,6 +40,6 @@ public class RpcConsumerInitializer extends ChannelInitializer<SocketChannel> {
         cp.addLast(RpcConstants.CODEC_ENCODER, new RpcEncoder());
         cp.addLast(RpcConstants.CODEC_DECODER, new RpcDecoder());
         cp.addLast(RpcConstants.CODEC_CLIENT_IDLE_HANDLER, new IdleStateHandler(heartbeatInterval, 0, 0, TimeUnit.MILLISECONDS));
-        cp.addLast(RpcConstants.CODEC_HANDLER, new RpcConsumerHandler());
+        cp.addLast(RpcConstants.CODEC_HANDLER, new RpcConsumerHandler(concurrentThreadPool));
     }
 }

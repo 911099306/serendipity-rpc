@@ -11,6 +11,7 @@ import com.serendipity.rpc.registry.api.config.RegistryConfig;
 import com.serendipity.rpc.registry.zookeeper.ZookeeperRegistryService;
 import com.serendipity.rpc.spi.factory.ExtensionFactory;
 import com.serendipity.rpc.spi.loader.ExtensionLoader;
+import com.serendipity.rpc.threadpool.ConcurrentThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -102,10 +103,21 @@ public class RpcClient {
      */
     private String directServerUrl;
 
+    /**
+     * 是否开启延迟连接
+     */
+    private boolean enableDelayConnection;
+
+    /**
+     * 并发线程池
+     */
+    private ConcurrentThreadPool concurrentThreadPool;
+
     public RpcClient(String registryAddress, String registryType, String registryLoadBalanceType, String proxy,
                      String serviceVersion, String serviceGroup, String serializationType, long timeout, boolean async,
                      boolean oneway, int heartbeatInterval, int scanNotActiveChannelInterval, int retryInterval,
-                     int retryTimes, boolean enableResultCache, int resultCacheExpire, boolean enableDirectServer, String directServerUrl) {
+                     int retryTimes, boolean enableResultCache, int resultCacheExpire, boolean enableDirectServer,
+                     String directServerUrl,boolean enableDelayConnection,int corePoolSize, int maximumPoolSize) {
         this.serviceVersion = serviceVersion;
         this.proxy = proxy;
         this.timeout = timeout;
@@ -121,7 +133,9 @@ public class RpcClient {
         this.resultCacheExpire = resultCacheExpire;
         this.enableDirectServer = enableDirectServer;
         this.directServerUrl = directServerUrl;
+        this.enableDelayConnection = enableDelayConnection;
         this.registryService = this.getRegistryService(registryAddress, registryType, registryLoadBalanceType);
+        this.concurrentThreadPool = ConcurrentThreadPool.getInstance(corePoolSize, maximumPoolSize);
     }
 
     /**
@@ -156,7 +170,11 @@ public class RpcClient {
                         .setDirectServerUrl(directServerUrl)
                         .setEnableDirectServer(enableDirectServer)
                         .setRetryTimes(retryTimes)
-                        .setScanNotActiveChannelInterval(scanNotActiveChannelInterval),
+                        .setScanNotActiveChannelInterval(scanNotActiveChannelInterval)
+                        .setEnableDelayConnection(enableDelayConnection)
+                        .setConcurrentThreadPool(concurrentThreadPool)
+                        .buildNettyGroup()
+                        .buildConnection(registryService),
                 async, oneway, enableResultCache, resultCacheExpire));
         return proxyFactory.getProxy(interfaceClass);
     }
@@ -169,7 +187,11 @@ public class RpcClient {
                         .setDirectServerUrl(directServerUrl)
                         .setEnableDirectServer(enableDirectServer)
                         .setRetryTimes(retryTimes)
-                        .setScanNotActiveChannelInterval(scanNotActiveChannelInterval),
+                        .setScanNotActiveChannelInterval(scanNotActiveChannelInterval)
+                        .setEnableDelayConnection(enableDelayConnection)
+                        .setConcurrentThreadPool(concurrentThreadPool)
+                        .buildNettyGroup()
+                        .buildConnection(registryService),
                 async, oneway, enableResultCache, resultCacheExpire);
     }
 

@@ -21,9 +21,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 /**
  * 基于Zookeeper的注册服务
@@ -153,6 +155,29 @@ public class ZookeeperRegistryService implements RegistryService {
     //     }
     //     return null;
     // }
+
+    @Override
+    public List<ServiceMeta> discoveryAll() throws Exception {
+        List<ServiceMeta> serviceMetaList = new ArrayList<>();
+        Collection<String> names = serviceDiscovery.queryForNames();
+        if (names == null || names.isEmpty()) return serviceMetaList;
+        for (String name : names){
+            Collection<ServiceInstance<ServiceMeta>> serviceInstances = serviceDiscovery.queryForInstances(name);
+            List<ServiceMeta> list = this.getServiceMetaFromServiceInstance((List<ServiceInstance<ServiceMeta>>) serviceInstances);
+            serviceMetaList.addAll(list);
+        }
+        return serviceMetaList;
+    }
+
+    private List<ServiceMeta> getServiceMetaFromServiceInstance(List<ServiceInstance<ServiceMeta>> serviceInstances){
+        List<ServiceMeta> list = new ArrayList<>();
+        if (serviceInstances == null || serviceInstances.isEmpty()) return list;
+        IntStream.range(0, serviceInstances.size()).forEach((i)->{
+            ServiceInstance<ServiceMeta> serviceInstance = serviceInstances.get(i);
+            list.add(serviceInstance.getPayload());
+        });
+        return list;
+    }
 
     @Override
     public void destroy() throws IOException {
