@@ -21,18 +21,43 @@ public class ConsumerNativeDemo {
 
     @Before
     public void initRpcClient() {
-        rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper", "random","jdk","1.0.0", "serendipity", "protostuff", 3000, false, false, 30000, 60000, 1000, 3, false, 10000, false, "127.0.0.1:278800",true,16,16,"print");
+        rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper", "random","jdk","1.0.0", "serendipity", "protostuff", 3000, false, false, 30000, 60000, 1000, 3, false, 10000, false, "127.0.0.1:278800",false,16,16,"print");
     }
 
 
     @Test
-    public void testInterfaceRpc() throws InterruptedException {
+    public void testInterfaceRpc1() throws InterruptedException {
         DemoService demoService = rpcClient.create(DemoService.class);
-        String result = demoService.hello("binghe");
-        LOGGER.info("返回的结果数据===>>> " + result);
+        // for (int i = 0; i < 10000; i++) {
+        //     String result = demoService.hello("binghe22");
+        //     LOGGER.info("返回的结果数据===>>> " + result);
+        // }
         // rpcClient.shutdown();
         while (true) {
-            Thread.sleep(1000);
+            Thread.sleep(100000);
+        }
+    }
+
+    @Test
+    public void testInterfaceRpc2() throws InterruptedException {
+        DemoService demoService = rpcClient.create(DemoService.class);
+            // String result = demoService.hello("binghe22");
+            // LOGGER.info("返回的结果数据===>>> " + result);
+
+        // rpcClient.shutdown();
+        while (true) {
+            Thread.sleep(100000);
+        }
+    }
+
+    @Test
+    public void testInterfaceRpc3() throws InterruptedException {
+        DemoService demoService = rpcClient.create(DemoService.class);
+            // String result = demoService.hello("binghe22");
+            // LOGGER.info("返回的结果数据===>>> "  + result);
+        // rpcClient.shutdown();
+        while (true) {
+            Thread.sleep(100000);
         }
     }
 

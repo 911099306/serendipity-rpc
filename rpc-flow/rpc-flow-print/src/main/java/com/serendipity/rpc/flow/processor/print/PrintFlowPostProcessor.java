@@ -18,7 +18,7 @@ public class PrintFlowPostProcessor implements FlowPostProcessor {
 
     @Override
     public void postRpcHeaderProcessor(RpcHeader rpcHeader) {
-        logger.info(getRpcHeaderString(rpcHeader));
+        // logger.info(getRpcHeaderString(rpcHeader));
     }
 
     /**

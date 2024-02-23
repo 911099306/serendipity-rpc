@@ -10,6 +10,7 @@
     <artifactId>rpc-provider-common</artifactId>
 
     <dependencies>
+
         <dependency>
             <groupId>com.serendipity</groupId>
             <artifactId>rpc-threadpool</artifactId>
@@ -29,6 +30,11 @@
         <dependency>
             <groupId>com.serendipity</groupId>
             <artifactId>rpc-registry-zookeeper</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-connection</artifactId>
             <version>${project.version}</version>
         </dependency>
 

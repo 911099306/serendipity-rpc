@@ -28,6 +28,8 @@
         <module>rpc-cache</module>
         <module>rpc-threadpool</module>
         <module>rpc-flow</module>
+        <module>rpc-connection</module>
+        <module>rpc-disuse</module>
     </modules>
 
 
