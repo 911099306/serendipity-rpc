@@ -140,6 +140,11 @@ public final class SpringBootConsumerConfig {
      */
     private int milliSeconds;
 
+    /**
+     * 当限流失败时的处理策略
+     */
+    private String rateLimiterFailStrategy;
+
     public SpringBootConsumerConfig() {
     }
 
@@ -151,7 +156,8 @@ public final class SpringBootConsumerConfig {
                                     final boolean enableDirectServer, final String directServerUrl, final boolean enableDelayConnection,
                                     final int corePoolSize, final int maximumPoolSize, String flowType, final boolean enableBuffer,
                                     final int bufferSize, final String reflectType, final String fallbackClassName,
-                                    final boolean enableRateLimiter, final String rateLimiterType, final int permits, final int milliSeconds) {
+                                    final boolean enableRateLimiter, final String rateLimiterType, final int permits, final int milliSeconds,
+                                    final String rateLimiterFailStrategy) {
         this.registryAddress = registryAddress;
         this.registryType = registryType;
         this.loadBalanceType = loadBalanceType;
@@ -182,6 +188,7 @@ public final class SpringBootConsumerConfig {
         this.rateLimiterType = rateLimiterType;
         this.permits = permits;
         this.milliSeconds = milliSeconds;
+        this.rateLimiterFailStrategy = rateLimiterFailStrategy;
     }
 
     public String getRegistryAddress() {
@@ -421,6 +428,14 @@ public final class SpringBootConsumerConfig {
 
     public void setMilliSeconds(int milliSeconds) {
         this.milliSeconds = milliSeconds;
+    }
+
+    public String getRateLimiterFailStrategy() {
+        return rateLimiterFailStrategy;
+    }
+
+    public void setRateLimiterFailStrategy(String rateLimiterFailStrategy) {
+        this.rateLimiterFailStrategy = rateLimiterFailStrategy;
     }
 
 }

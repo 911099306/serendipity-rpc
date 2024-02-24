@@ -47,7 +47,7 @@ public class ProtostuffSerialization implements Serialization {
     @SuppressWarnings("unchecked")
     @Override
     public <T> byte[] serialize(T obj) {
-        logger.info("execute protostuff serialize...");
+        // logger.info("execute protostuff serialize...");
         if (obj == null){
             throw new SerializerException("serialize object is null");
         }
@@ -68,7 +68,7 @@ public class ProtostuffSerialization implements Serialization {
      */
     @Override
     public <T> T deserialize(byte[] data, Class<T> cls) {
-        logger.info("execute protostuff deserialize...");
+        // logger.info("execute protostuff deserialize...");
         if (data == null){
             throw new SerializerException("deserialize data is null");
         }

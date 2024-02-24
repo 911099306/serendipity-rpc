@@ -265,7 +265,6 @@ public class RpcConsumer implements Consumer {
      * @throws Exception 抛出异常
      */
     private RpcConsumerHandler getRpcConsumerHandlerWithRetry(RegistryService registryService, String serviceKey, int invokerHashCode) throws Exception {
-        logger.info("获取服务消费者处理器...");
         RpcConsumerHandler handler = getRpcConsumerHandler(registryService, serviceKey, invokerHashCode);
         // 获取的handler为空，启动重试机制
         if (handler == null) {

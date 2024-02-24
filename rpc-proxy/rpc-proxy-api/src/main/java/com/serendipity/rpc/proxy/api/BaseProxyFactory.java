@@ -33,6 +33,7 @@ public abstract class BaseProxyFactory<T> implements ProxyFactory {
                 proxyConfig.getEnableRateLimiter(),
                 proxyConfig.getRateLimiterType(),
                 proxyConfig.getPermits(),
-                proxyConfig.getMilliSeconds());
+                proxyConfig.getMilliSeconds(),
+                proxyConfig.getRateLimiterFailStrategy());
     }
 }

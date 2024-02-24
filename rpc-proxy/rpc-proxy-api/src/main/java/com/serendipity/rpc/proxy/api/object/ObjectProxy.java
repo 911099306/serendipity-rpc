@@ -109,6 +109,11 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
      */
     private boolean enableRateLimiter;
 
+    /**
+     * 当限流失败时的处理策略
+     */
+    private String rateLimiterFailStrategy;
+
     public ObjectProxy(Class<T> clazz) {
         this.clazz = clazz;
     }
@@ -116,7 +121,7 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
     public ObjectProxy(Class<T> clazz, String serviceVersion, String serviceGroup, String serializationType, long timeout,
                        RegistryService registryService, Consumer consumer, boolean async, boolean oneway, boolean enableResultCache,
                        int resultCacheExpire, String reflectType, String fallbackClassName, Class<?> fallbackClass,
-                       boolean enableRateLimiter, String rateLimiterType, int permits, int milliSeconds) {
+                       boolean enableRateLimiter, String rateLimiterType, int permits, int milliSeconds, String rateLimiterFailStrategy) {
         this.clazz = clazz;
         this.serviceVersion = serviceVersion;
         this.timeout = timeout;
@@ -135,6 +140,10 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
         this.fallbackClass = this.getFallbackClass(fallbackClassName, fallbackClass);
         this.enableRateLimiter = enableRateLimiter;
         this.initRateLimiter(rateLimiterType, permits, milliSeconds);
+        if (StringUtils.isEmpty(rateLimiterFailStrategy)){
+            rateLimiterFailStrategy = RpcConstants.RATE_LIMILTER_FAIL_STRATEGY_DIRECT;
+        }
+        this.rateLimiterFailStrategy = rateLimiterFailStrategy;
     }
 
     /**
@@ -245,12 +254,27 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
                     rateLimiterInvoker.release();
                 }
             }else {
-                //TODO 执行各种策略
+                result = this.invokeFailRateLimiterMethod(method, args);
             }
         }else {
             result = invokeSendRequestMethod(method, args);
         }
         return result;
+    }
+
+    /**
+     * 执行限流失败时的处理逻辑
+     */
+    private Object invokeFailRateLimiterMethod(Method method, Object[] args) throws Exception{
+        logger.info("execute {} fail rate limiter strategy...", rateLimiterFailStrategy);
+        switch (rateLimiterFailStrategy){
+            case RpcConstants.RATE_LIMILTER_FAIL_STRATEGY_EXCEPTION:
+            case RpcConstants.RATE_LIMILTER_FAIL_STRATEGY_FALLBACK:
+                return this.getFallbackResult(method, args);
+            case RpcConstants.RATE_LIMILTER_FAIL_STRATEGY_DIRECT:
+                return this.invokeSendRequestMethod(method, args);
+        }
+        return this.invokeSendRequestMethod(method, args);
     }
 
 

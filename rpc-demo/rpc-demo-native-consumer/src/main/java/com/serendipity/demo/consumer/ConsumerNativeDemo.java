@@ -22,15 +22,17 @@ public class ConsumerNativeDemo {
     @Before
     public void initRpcClient() {
 
-        rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper", "random", "cglib", "1.0.0", "serendipity", "protostuff", 9000, false, false, 30000, 60000, 10000, 3, false, 10000, false, "127.0.0.1:278800", false, 16, 16, "print", true, 2,"jdk", "com.serendipity.demo.consumer.hello.FallbackDemoServiceImpl",true,"guava",100,1000);
+        rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper", "random", "cglib", "1.0.0", "serendipity", "protostuff", 9000, false, false, 30000, 60000, 10000, 3, false, 10000, false, "127.0.0.1:278800", false, 16, 16, "print", true, 2,"jdk", "com.serendipity.demo.consumer.hello.FallbackDemoServiceImpl",true,"counter",1, 5000, "fallback");
     }
 
 
     @Test
     public void testInterfaceRpc1() throws InterruptedException {
         DemoService demoService = rpcClient.create(DemoService.class);
-        String result = demoService.hello("serendipity");
-        LOGGER.info("返回的结果数据===>>> " + result);
+        for (int i = 0; i < 5; i++) {
+            String result = demoService.hello("serendipity11");
+            LOGGER.info("返回的结果数据===>>> " + result);
+        }
         // rpcClient.shutdown();
         while (true) {
             Thread.sleep(100000);

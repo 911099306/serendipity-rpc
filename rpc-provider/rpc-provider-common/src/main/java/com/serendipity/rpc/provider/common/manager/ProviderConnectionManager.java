@@ -49,7 +49,7 @@ public class ProviderConnectionManager {
         responseRpcProtocol.setBody(rpcResponse);
         channelCache.stream().forEach((channel) -> {
             if (channel.isOpen() && channel.isActive()) {
-                logger.info("send heartbeat message to service consumer, the consumer is: {}, the heartbeat message is: {}", channel.remoteAddress(), rpcResponse.getResult());
+                // logger.info("send heartbeat message to service consumer, the consumer is: {}, the heartbeat message is: {}", channel.remoteAddress(), rpcResponse.getResult());
                 channel.writeAndFlush(responseRpcProtocol);
             }
         });
