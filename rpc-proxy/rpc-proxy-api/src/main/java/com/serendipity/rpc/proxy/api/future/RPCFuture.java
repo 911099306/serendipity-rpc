@@ -3,6 +3,8 @@ package com.serendipity.rpc.proxy.api.future;
 
 import com.serendipity.rpc.common.threadpoll.ClientThreadPool;
 import com.serendipity.rpc.protocol.RpcProtocol;
+import com.serendipity.rpc.protocol.enumeration.RpcStatus;
+import com.serendipity.rpc.protocol.header.RpcHeader;
 import com.serendipity.rpc.protocol.request.RpcRequest;
 import com.serendipity.rpc.protocol.response.RpcResponse;
 import com.serendipity.rpc.proxy.api.callback.AsyncRPCCallback;
@@ -81,36 +83,47 @@ public class RPCFuture extends CompletableFuture<Object> {
         return sync.isDone();
     }
 
-    /**
-     * 阻塞获取 ResponseRpcProtocol 协议对象中的实际结果数据
-     */
     @Override
     public Object get() throws InterruptedException, ExecutionException {
         sync.acquire(-1);
-        if (this.responseRpcProtocol != null) {
-            return this.responseRpcProtocol.getBody().getResult();
-        } else {
-            return null;
-        }
+//        if (this.responseRpcProtocol != null) {
+//            return this.responseRpcProtocol.getBody().getResult();
+//        } else {
+//            return null;
+//        }
+        return this.getResult(this.responseRpcProtocol);
     }
 
-    /**
-     * 超时阻塞获取 ResponseRpcProtocol 协议对象中的实际结果数据
-     */
     @Override
     public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         boolean success = sync.tryAcquireNanos(-1, unit.toNanos(timeout));
         if (success) {
-            if (this.responseRpcProtocol != null) {
-                return this.responseRpcProtocol.getBody().getResult();
-            } else {
-                return null;
-            }
+//            if (this.responseRpcProtocol != null) {
+//                return this.responseRpcProtocol.getBody().getResult();
+//            } else {
+//                return null;
+//            }
+            return this.getResult(this.responseRpcProtocol);
         } else {
             throw new RuntimeException("Timeout exception. Request id: " + this.requestRpcProtocol.getHeader().getRequestId()
                     + ". Request class name: " + this.requestRpcProtocol.getBody().getClassName()
                     + ". Request method: " + this.requestRpcProtocol.getBody().getMethodName());
         }
+    }
+
+    /**
+     * 获取最终结果
+     */
+    private Object getResult(RpcProtocol<RpcResponse> responseRpcProtocol){
+        if (responseRpcProtocol == null){
+            return null;
+        }
+        RpcHeader header = responseRpcProtocol.getHeader();
+        //服务提供者抛出了异常
+        if ((byte) RpcStatus.FAIL.getCode() == header.getStatus()){
+            throw new RuntimeException("rpc provider throws exception...");
+        }
+        return responseRpcProtocol.getBody().getResult();
     }
 
     @Override
@@ -123,12 +136,6 @@ public class RPCFuture extends CompletableFuture<Object> {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * 当服务消费者接收到服务提供者响应的结果时，就会调用 done() 方法，
-     * 并传入RpcResponse类型的协议对象
-     * 此时会唤醒阻塞的线程获取响应的数据结果
-     * @param responseRpcProtocol
-     */
     public void done(RpcProtocol<RpcResponse> responseRpcProtocol) {
         this.responseRpcProtocol = responseRpcProtocol;
         sync.release(1);
@@ -151,15 +158,12 @@ public class RPCFuture extends CompletableFuture<Object> {
         }
     }
 
-    /**
-     * 添加回调方法
-     */
     public RPCFuture addCallback(AsyncRPCCallback callback) {
         lock.lock();
         try {
             if (isDone()) {
                 runCallback(callback);
-            }else {
+            } else {
                 this.pendingCallbacks.add(callback);
             }
         } finally {
@@ -168,9 +172,6 @@ public class RPCFuture extends CompletableFuture<Object> {
         return this;
     }
 
-    /**
-     * 执行回调方法
-     */
     private void runCallback(final AsyncRPCCallback callback) {
         final RpcResponse res = this.responseRpcProtocol.getBody();
         concurrentThreadPool.submit(() -> {
@@ -186,7 +187,7 @@ public class RPCFuture extends CompletableFuture<Object> {
 
         private static final long serialVersionUID = 1L;
 
-        // future status
+        //future status
         private final int done = 1;
         private final int pending = 0;
 
