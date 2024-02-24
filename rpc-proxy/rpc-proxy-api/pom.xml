@@ -59,5 +59,22 @@
             <artifactId>rpc-reflect-jdk</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <!-- 限流SPI -->
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-ratelimiter-conter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-ratelimiter-guava</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-ratelimiter-semaphore</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

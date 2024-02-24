@@ -1,0 +1,1 @@
+semaphore=com.serendipity.rpc.ratelimiter.semaphore.SemaphoreRateLimiterInvoker
