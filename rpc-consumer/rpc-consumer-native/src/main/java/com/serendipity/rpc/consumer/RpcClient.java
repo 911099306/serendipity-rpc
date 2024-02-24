@@ -165,13 +165,34 @@ public class RpcClient {
      */
     private String rateLimiterFailStrategy;
 
+    /**
+     * 是否开启熔断策略
+     */
+    private boolean enableFusing;
+
+    /**
+     * 熔断规则标识
+     */
+    private String fusingType;
+
+    /**
+     * 在fusingMilliSeconds毫秒内触发熔断操作的上限值
+     */
+    private double totalFailure;
+
+    /**
+     * 熔断的毫秒时长
+     */
+    private int fusingMilliSeconds;
+
     public RpcClient(String registryAddress, String registryType, String registryLoadBalanceType, String proxy,
                      String serviceVersion, String serviceGroup, String serializationType, long timeout, boolean async,
                      boolean oneway, int heartbeatInterval, int scanNotActiveChannelInterval, int retryInterval,
                      int retryTimes, boolean enableResultCache, int resultCacheExpire, boolean enableDirectServer,
                      String directServerUrl, boolean enableDelayConnection, int corePoolSize, int maximumPoolSize,
                      String flowType, boolean enableBuffer, int bufferSize, String reflectType, String fallbackClassName,
-                     boolean enableRateLimiter, String rateLimiterType, int permits, int milliSeconds, String rateLimiterFailStrategy) {
+                     boolean enableRateLimiter, String rateLimiterType, int permits, int milliSeconds, String rateLimiterFailStrategy,
+                     boolean enableFusing, String fusingType, double totalFailure, int fusingMilliSeconds) {
         this.serviceVersion = serviceVersion;
         this.proxy = proxy;
         this.timeout = timeout;
@@ -198,9 +219,14 @@ public class RpcClient {
         this.permits = permits;
         this.milliSeconds = milliSeconds;
         this.rateLimiterFailStrategy = rateLimiterFailStrategy;
+        this.enableFusing = enableFusing;
+        this.fusingType = fusingType;
+        this.totalFailure = totalFailure;
+        this.fusingMilliSeconds = fusingMilliSeconds;
         this.registryService = this.getRegistryService(registryAddress, registryType, registryLoadBalanceType);
         this.concurrentThreadPool = ConcurrentThreadPool.getInstance(corePoolSize, maximumPoolSize);
     }
+
     public void setFallbackClass(Class<?> fallbackClass) {
         this.fallbackClass = fallbackClass;
     }
@@ -244,7 +270,8 @@ public class RpcClient {
                         .buildNettyGroup()
                         .buildConnection(registryService),
                 async, oneway, enableResultCache, resultCacheExpire, reflectType, fallbackClassName, fallbackClass,
-                enableRateLimiter, rateLimiterType, permits, milliSeconds,rateLimiterFailStrategy));
+                enableRateLimiter, rateLimiterType, permits, milliSeconds, rateLimiterFailStrategy,
+                enableFusing, fusingType, totalFailure, fusingMilliSeconds));
         return proxyFactory.getProxy(interfaceClass);
     }
 
@@ -265,7 +292,8 @@ public class RpcClient {
                         .buildNettyGroup()
                         .buildConnection(registryService),
                 async, oneway, enableResultCache, resultCacheExpire, reflectType, fallbackClassName, fallbackClass,
-                enableRateLimiter, rateLimiterType, permits, milliSeconds,rateLimiterFailStrategy);
+                enableRateLimiter, rateLimiterType, permits, milliSeconds, rateLimiterFailStrategy,
+                enableFusing, fusingType, totalFailure, fusingMilliSeconds);
     }
 
 

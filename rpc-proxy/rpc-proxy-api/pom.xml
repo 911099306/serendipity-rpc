@@ -76,5 +76,12 @@
             <artifactId>rpc-ratelimiter-semaphore</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <!-- 熔断SPI -->
+        <dependency>
+            <groupId>com.serendipity</groupId>
+            <artifactId>rpc-fusing-counter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

@@ -22,7 +22,7 @@ public class ConsumerNativeDemo {
     @Before
     public void initRpcClient() {
 
-        rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper", "random", "cglib", "1.0.0", "serendipity", "protostuff", 9000, false, false, 30000, 60000, 10000, 3, false, 10000, false, "127.0.0.1:278800", false, 16, 16, "print", true, 2,"jdk", "com.serendipity.demo.consumer.hello.FallbackDemoServiceImpl",true,"counter",1, 5000, "fallback");
+        rpcClient = new RpcClient("127.0.0.1:2181", "zookeeper", "random", "cglib", "1.0.0", "serendipity", "protostuff", 9000, false, false, 30000, 60000, 10000, 3, false, 10000, false, "127.0.0.1:278800", false, 16, 16, "print", false, 2,"jdk", "com.serendipity.demo.consumer.hello.FallbackDemoServiceImpl",false,"counter",1, 5000, "fallback",true, "counter", 1, 10000);
     }
 
 

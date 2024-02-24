@@ -183,7 +183,7 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
      */
     private void handlerHeartbeatMessageToConsumer(RpcProtocol<RpcResponse> protocol, Channel channel) {
         // 此处简单打印即可,实际场景可不做处理
-        logger.info("receive service provider heartbeat message, the provider is: {}, the heartbeat message is: {}", channel.remoteAddress(), protocol.getBody().getResult());
+        // logger.info("receive service provider heartbeat message, the provider is: {}, the heartbeat message is: {}", channel.remoteAddress(), protocol.getBody().getResult());
     }
 
     /**
